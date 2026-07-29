@@ -1,6 +1,4 @@
-// ============================================================
 // THEME TOGGLE
-// ============================================================
 const themeToggle = document.getElementById('themeToggle');
 const icon = themeToggle.querySelector('i');
 
@@ -18,9 +16,7 @@ themeToggle.addEventListener('click', () => {
     setTheme(current === 'light' ? 'dark' : 'light');
 });
 
-// ============================================================
 // HAMBURGER MENU
-// ============================================================
 const hamburger = document.getElementById('hamburger');
 const navLinks = document.getElementById('navLinks');
 
@@ -36,10 +32,8 @@ document.querySelectorAll('.nav-links a').forEach(link => {
     });
 });
 
-// ============================================================
 // TYPING EFFECT
-// ============================================================
-const words = ['Jr Red Team Operator', 'Jr Penetration Tester', 'Active Directory Security'];
+const words = ['Red Team Operator', 'Penetration Tester', 'Active Directory Security'];
 let wordIndex = 0, charIndex = 0, isDeleting = false;
 const typedText = document.getElementById('typed-text');
 
@@ -67,9 +61,7 @@ function typeEffect() {
 }
 typeEffect();
 
-// ============================================================
 // PROGRESS BAR
-// ============================================================
 const progressBar = document.getElementById('progressBar');
 window.addEventListener('scroll', () => {
     const scrollTop = window.scrollY;
@@ -78,9 +70,7 @@ window.addEventListener('scroll', () => {
     progressBar.style.width = progress + '%';
 });
 
-// ============================================================
 // BACK TO TOP
-// ============================================================
 const backToTop = document.getElementById('backToTop');
 window.addEventListener('scroll', () => {
     backToTop.classList.toggle('visible', window.scrollY > 500);
@@ -89,9 +79,7 @@ backToTop.addEventListener('click', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-// ============================================================
 // STATS COUNTER
-// ============================================================
 const counters = document.querySelectorAll('.stat-number[data-count]');
 const statsSection = document.querySelector('.stats-bar');
 
@@ -119,9 +107,7 @@ const observer = new IntersectionObserver((entries) => {
 
 if (statsSection) observer.observe(statsSection);
 
-// ============================================================
 // COLLAPSIBLE SECTIONS - SMART ANIMATION
-// ============================================================
 document.addEventListener('DOMContentLoaded', function() {
     const allSections = document.querySelectorAll('.projects-section');
     
@@ -233,9 +219,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// ============================================================
 // MACHINES FILTER & PAGINATION - WITH ANIMATION
-// ============================================================
 document.addEventListener('DOMContentLoaded', function() {
     const filterBtns = document.querySelectorAll('.filter-btn');
     const machineCards = document.querySelectorAll('.machine-card');
@@ -412,9 +396,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateDisplay();
 });
 
-// ============================================================
 // WRITEUP FILTER
-// ============================================================
 const writeupFilters = document.querySelectorAll('.writeup-filter');
 const writeupCards = document.querySelectorAll('.writeup-card');
 
@@ -443,9 +425,7 @@ if (writeupFilters.length) {
     });
 }
 
-// ============================================================
 // ARCHIVE FILTER
-// ============================================================
 const archiveFilters = document.querySelectorAll('.archive-filter');
 const archiveItems = document.querySelectorAll('.archive-item');
 
@@ -473,9 +453,7 @@ if (archiveFilters.length) {
         });
     });
 }
-// ============================================================
 // CONTACT FORM - Formspree AJAX Submission
-// ============================================================
 document.addEventListener('DOMContentLoaded', function() {
   const form = document.getElementById('contactForm');
   if (!form) return;
@@ -637,9 +615,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-// ============================================================
 // KEYBOARD ACCESSIBILITY
-// ============================================================
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         navLinks.classList.remove('open');
@@ -647,9 +623,7 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// ============================================================
 // SKILL BARS ANIMATION
-// ============================================================
 document.addEventListener('DOMContentLoaded', function() {
     const skillBars = document.querySelectorAll('.skill-bar-fill');
     
@@ -674,9 +648,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// ============================================================
 // CV MODAL
-// ============================================================
 document.addEventListener('DOMContentLoaded', function() {
     const cvButton = document.getElementById('cvButton');
     const cvModal = document.getElementById('cvModal');
@@ -712,9 +684,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// ============================================================
 // CUSTOM CURSOR
-// ============================================================
 document.addEventListener('DOMContentLoaded', function() {
     const cursorDot = document.getElementById('cursorDot');
     const cursorRing = document.getElementById('cursorRing');
