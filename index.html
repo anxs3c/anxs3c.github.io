@@ -19,12 +19,10 @@
   <a href="#main" class="skip-link">Skip to main content</a>
   <div class="progress-bar" id="progressBar"></div>
 
-  <!-- ===== NAVIGATION ===== -->
   <nav class="navbar" id="navbar">
     <div class="container">
       <a href="#" class="logo"><span>🛡️ </span>ANXS<span>3C</span></a>
       <ul class="nav-links" id="navLinks">
-        <li><a href="#about">About</a></li>
         <li><a href="#expertise">Expertise</a></li>
         <li><a href="#portfolio">Projects</a></li>
         <li><a href="#writeups">Writeups</a></li>
@@ -42,6 +40,7 @@
   </nav>
 
   <main id="main">
+
     <section class="hero">
       <div class="container">
         <div class="hero-wrapper">
@@ -51,13 +50,17 @@
               Open to Work · Available for Engagements
             </div>
             <h1>
-              <span class="greeting">Hi, I'm</span>
+              <span class="greeting">Hi, I'm Achraf Nouri</span>
               <span class="name">ANXS3C</span>
             </h1>
             <div class="hero-role">
               <span id="typed-text">Red Team Operator</span>
               <span class="cursor"></span>
             </div>
+            <p class="hero-desc">
+              Offensive security professional specializing in <strong>Active Directory</strong> and <strong>web application</strong> penetration testing. 
+              Committed to delivering comprehensive security assessments that identify and exploit complex attack vectors
+            </p>
             <div class="hero-actions">
               <a href="#portfolio" class="btn btn-primary">
                 <i class="fas fa-chevron-right"></i> View My Work
@@ -71,16 +74,19 @@
             </div>
             <div class="hero-social">
               <a href="https://github.com/anxs3c" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
-              <a href="https://www.linkedin.com/in/achrafnouri/" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+              <a href="https://www.linkedin.com/in/achraf-nouri/" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
               <a href="https://app.hackthebox.com/public/users/1859770" target="_blank" aria-label="HackTheBox"><i class="fas fa-cube"></i></a>
               <a href="https://medium.com/@anxs3c" target="_blank" aria-label="Medium"><i class="fab fa-medium-m"></i></a>
               <a href="https://tryhackme.com/p/ANxS3c" target="_blank" aria-label="TryHackMe"><i class="fas fa-user-graduate"></i></a>
+              <a href="https://www.instagram.com/acnr1.1" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+              <a href="https://discord.com/users/1264871107987636234" target="_blank" aria-label="Discord"><i class="fab fa-discord"></i></a>
+              <a href="https://t.me/acnr1_1" target="_blank" aria-label="Telegram"><i class="fab fa-telegram-plane"></i></a>
             </div>
           </div>
           <div class="hero-visual">
             <div class="avatar-container">
               <div class="hero-avatar">
-                <span class="avatar-icon">🕵︎</span>
+                <img src="./assets/images/ACHRAFNOURI.png" alt="Achraf Nouri - Red Team Operator" class="avatar-image" />
               </div>
             </div>
           </div>
@@ -98,7 +104,6 @@
       </div>
     </div>
 
-    <!-- ===== STATS ===== -->
     <section class="stats-bar">
       <div class="container">
         <div class="stats-grid">
@@ -146,29 +151,6 @@
       </div>
     </section>
 
-    <!-- ===== ABOUT ===== -->
-    <section class="about" id="about">
-      <div class="container">
-        <div class="about-grid">
-          <div class="about-content">
-            <span class="section-tag">About</span>
-            <h2 class="section-title">Offensive Security</h2>
-            <p class="about-text">I specialize in <strong>Active Directory</strong> and <strong>web application penetration testing</strong></p>
-            <p class="about-text">My approach combines manual methodology with custom automation to simulate sophisticated attack chains</p>
-            <p class="about-text">With a commitment to continuous learning, I maintain an aggressive lab schedule to stay ahead of emerging threats and TTPs</p>
-            <div class="about-skills">
-                <span>Red Team</span>
-                <span>Active Directory</span>
-                <span>Linux Exploitation</span>
-                <span>Web Pentesting</span>
-                <span>Network Pivoting</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== EXPERTISE ===== -->
     <section class="expertise" id="expertise">
       <div class="container">
         <span class="section-tag">Expertise</span>
@@ -275,14 +257,12 @@
       </div>
     </section>
 
-    <!-- ===== PORTFOLIO ===== -->
     <section class="portfolio" id="portfolio">
       <div class="container">
         <span class="section-tag">Portfolio</span>
         <h2 class="section-title">Featured Work</h2>
         <p class="section-subtitle">Projects and Penetration Testing Labs</p>
 
-        <!-- Security Projects -->
         <div class="projects-section collapsible-section open-by-default">
           <h3 class="section-subtitle-sm collapsible-trigger" id="securityTrigger">
             <span><i class="fas fa-code"></i> Security Projects</span>
@@ -335,7 +315,7 @@
                   <span><i class="fas fa-code"></i> Python</span>
                   <span><i class="fas fa-shield-halved"></i> Red Team</span>
                 </div>
-                <a href="#" class="project-link">GitHub →</a>
+                <a href="https://github.com/anxs3c/ADEnumSuite" class="project-link">GitHub →</a>
               </div>
               <div class="project-card">
                 <div class="project-header">
@@ -351,13 +331,29 @@
                   <span><i class="fas fa-code"></i> Docker</span>
                   <span><i class="fas fa-network-wired"></i> Pivoting</span>
                 </div>
-                <a href="#" class="project-link">GitHub →</a>
+                <a href="https://github.com/anxs3c/PivotLab" class="project-link">GitHub →</a>
+              </div>
+              <div class="project-card">
+                <div class="project-header">
+                  <i class="fas fa-keyboard"></i>
+                  <span class="project-status">Active</span>
+                </div>
+                <h4>KeyLOGr · C2 Keylogger</h4>
+                <p>Advanced keylogger with C2 communication, process injection, persistence, and stealth techniques for Windows</p>
+                <div class="project-tags">
+                  <span>C</span><span>Windows</span><span>Keylogger</span><span>C2</span><span>Process Injection</span>
+                </div>
+                <div class="project-stats">
+                  <span><i class="fas fa-code"></i> C</span>
+                  <span><i class="fas fa-shield-halved"></i> Red Team</span>
+                  <span><i class="fas fa-eye-slash"></i> Stealth</span>
+                </div>
+                <a href="https://github.com/anxs3c/KeyLOGr" target="_blank" class="project-link">GitHub →</a>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Web Security Labs -->
         <div class="projects-section collapsible-section open-by-default">
           <h3 class="section-subtitle-sm collapsible-trigger" id="webLabsTrigger">
             <span><i class="fas fa-globe"></i> Web Security Labs</span>
@@ -370,223 +366,222 @@
                 <h4>Access Control</h4>
                 <p>IDOR, privilege escalation, insecure direct object references</p>
                 <div class="project-tags"><span>IDOR</span><span>Privilege Escalation</span></div>
-                <a href="#" class="project-link">Access Control Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-AccessControl" class="project-link">Access Control Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-upload"></i><span class="project-status">Active</span></div>
                 <h4>File Upload</h4>
                 <p>Web shells, RCE, file upload bypass techniques</p>
                 <div class="project-tags"><span>Web Shell</span><span>RCE</span></div>
-                <a href="#" class="project-link">File Upload Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-FileUpload" class="project-link">File Upload Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-key"></i><span class="project-status">Active</span></div>
                 <h4>Authentication</h4>
                 <p>Session management, brute force, MFA bypass</p>
                 <div class="project-tags"><span>Session Management</span><span>MFA Bypass</span></div>
-                <a href="#" class="project-link">Authentication Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-Authentication" class="project-link">Authentication Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-code"></i><span class="project-status">Active</span></div>
                 <h4>Cross‑Site Scripting (XSS)</h4>
                 <p>Reflected, stored, and DOM‑based XSS attacks</p>
                 <div class="project-tags"><span>Reflected XSS</span><span>DOM XSS</span></div>
-                <a href="#" class="project-link">XSS Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-XSS" class="project-link">XSS Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-database"></i><span class="project-status">Active</span></div>
                 <h4>SQL Injection</h4>
                 <p>Union‑based, blind, error‑based SQL injection</p>
                 <div class="project-tags"><span>Union‑based</span><span>Blind SQLi</span></div>
-                <a href="#" class="project-link">SQLi Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-SQLi" class="project-link">SQLi Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-user-secret"></i><span class="project-status">Active</span></div>
                 <h4>CSRF</h4>
                 <p>Request forgery, state‑changing attacks</p>
                 <div class="project-tags"><span>CSRF</span><span>Request Forgery</span></div>
-                <a href="#" class="project-link">CSRF Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-CSRF" class="project-link">CSRF Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-mouse-pointer"></i><span class="project-status">Active</span></div>
                 <h4>Clickjacking</h4>
                 <p>UI redressing, iframe exploitation</p>
                 <div class="project-tags"><span>UI Redressing</span><span>Iframe</span></div>
-                <a href="#" class="project-link">Clickjacking Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-Clickjacking" class="project-link">Clickjacking Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-file-code"></i><span class="project-status">Active</span></div>
                 <h4>DOM‑Based</h4>
                 <p>DOM XSS, client‑side injection</p>
                 <div class="project-tags"><span>DOM XSS</span><span>Client‑side</span></div>
-                <a href="#" class="project-link">DOM Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-DOM" class="project-link">DOM Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-share-alt"></i><span class="project-status">Active</span></div>
                 <h4>CORS</h4>
                 <p>CORS misconfiguration, data exfiltration</p>
                 <div class="project-tags"><span>CORS</span><span>Origin Spoofing</span></div>
-                <a href="#" class="project-link">CORS Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-CORS" class="project-link">CORS Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-file-alt"></i><span class="project-status">Active</span></div>
                 <h4>XXE Injection</h4>
                 <p>File disclosure, SSRF via XXE</p>
                 <div class="project-tags"><span>XXE</span><span>SSRF</span></div>
-                <a href="#" class="project-link">XXE Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-XXE" class="project-link">XXE Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-network-wired"></i><span class="project-status">Active</span></div>
                 <h4>SSRF</h4>
                 <p>Cloud metadata, internal service access</p>
                 <div class="project-tags"><span>SSRF</span><span>Cloud Metadata</span></div>
-                <a href="#" class="project-link">SSRF Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-SSRF" class="project-link">SSRF Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-arrows-alt-h"></i><span class="project-status">Active</span></div>
                 <h4>Request Smuggling</h4>
                 <p>Desync attacks, CL‑TE, TE‑CL</p>
                 <div class="project-tags"><span>Desync</span><span>CL‑TE</span></div>
-                <a href="#" class="project-link">Request Smuggling →</a>
+                <a href="https://github.com/anxs3c/WebSec-RequestSmuggling" class="project-link">Request Smuggling →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-terminal"></i><span class="project-status">Active</span></div>
                 <h4>OS Command Injection</h4>
                 <p>RCE, command injection, shell access</p>
                 <div class="project-tags"><span>RCE</span><span>Command Injection</span></div>
-                <a href="#" class="project-link">OS Command Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-OSCommand" class="project-link">OS Command Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-edit"></i><span class="project-status">Active</span></div>
                 <h4>SSTI</h4>
                 <p>Template engine exploitation, RCE</p>
                 <div class="project-tags"><span>SSTI</span><span>RCE</span></div>
-                <a href="#" class="project-link">SSTI Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-SSTI" class="project-link">SSTI Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-folder-open"></i><span class="project-status">Active</span></div>
                 <h4>Path Traversal</h4>
                 <p>Directory traversal, file disclosure</p>
                 <div class="project-tags"><span>Directory Traversal</span><span>File Disclosure</span></div>
-                <a href="#" class="project-link">Path Traversal Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-PathTraversal" class="project-link">Path Traversal Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-plug"></i><span class="project-status">Active</span></div>
                 <h4>WebSockets</h4>
                 <p>Message manipulation, WS security</p>
                 <div class="project-tags"><span>WebSockets</span><span>Message Manipulation</span></div>
-                <a href="#" class="project-link">WebSockets Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-WebSockets" class="project-link">WebSockets Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-cache"></i><span class="project-status">Active</span></div>
                 <h4>Cache Poisoning</h4>
                 <p>Cache poisoning, cache deception</p>
                 <div class="project-tags"><span>Cache Poisoning</span><span>Cache Deception</span></div>
-                <a href="#" class="project-link">Cache Poisoning Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-CachePoisoning" class="project-link">Cache Poisoning Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-box"></i><span class="project-status">Active</span></div>
                 <h4>Insecure Deserialization</h4>
                 <p>Object injection, RCE via deserialization</p>
                 <div class="project-tags"><span>Deserialization</span><span>Object Injection</span></div>
-                <a href="#" class="project-link">Deserialization Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-InsecureDeserialization" class="project-link">Deserialization Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-eye"></i><span class="project-status">Active</span></div>
                 <h4>Info Disclosure</h4>
                 <p>Info leaks, error messages, debug mode</p>
                 <div class="project-tags"><span>Info Leak</span><span>Debug Mode</span></div>
-                <a href="#" class="project-link">Info Disclosure Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-InfoDisclosure" class="project-link">Info Disclosure Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-chart-line"></i><span class="project-status">Active</span></div>
                 <h4>Business Logic</h4>
                 <p>Logic flaws, workflow bypass, transaction abuse</p>
                 <div class="project-tags"><span>Logic Flaws</span><span>Transaction Abuse</span></div>
-                <a href="#" class="project-link">Business Logic Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-BusinessLogic" class="project-link">Business Logic Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-server"></i><span class="project-status">Active</span></div>
                 <h4>Host Header Attacks</h4>
                 <p>Password reset poisoning, cache poisoning</p>
                 <div class="project-tags"><span>Host Header</span><span>Password Reset</span></div>
-                <a href="#" class="project-link">Host Header Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-HostHeader" class="project-link">Host Header Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-user-circle"></i><span class="project-status">Active</span></div>
                 <h4>OAuth</h4>
                 <p>Token abuse, authorization flaws</p>
                 <div class="project-tags"><span>OAuth</span><span>Token Abuse</span></div>
-                <a href="#" class="project-link">OAuth Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-OAuth" class="project-link">OAuth Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-key"></i><span class="project-status">Active</span></div>
                 <h4>JWT</h4>
                 <p>Algorithm confusion, signature bypass</p>
                 <div class="project-tags"><span>JWT</span><span>Algorithm Confusion</span></div>
-                <a href="#" class="project-link">JWT Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-JWT" class="project-link">JWT Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-tools"></i><span class="project-status">Active</span></div>
                 <h4>Essential Skills</h4>
                 <p>Enumeration, fuzzing, reconnaissance</p>
                 <div class="project-tags"><span>Enumeration</span><span>Fuzzing</span></div>
-                <a href="#" class="project-link">Essential Skills Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-EssentialSkills" class="project-link">Essential Skills Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-bolt"></i><span class="project-status">Active</span></div>
                 <h4>Prototype Pollution</h4>
                 <p>RCE, object manipulation, bypass controls</p>
                 <div class="project-tags"><span>Prototype Pollution</span><span>RCE</span></div>
-                <a href="#" class="project-link">Prototype Pollution Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-PrototypePollution" class="project-link">Prototype Pollution Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-project-diagram"></i><span class="project-status">Active</span></div>
                 <h4>GraphQL</h4>
                 <p>Introspection, injection, DoS</p>
                 <div class="project-tags"><span>GraphQL</span><span>Introspection</span></div>
-                <a href="#" class="project-link">GraphQL Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-GraphQL" class="project-link">GraphQL Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-clock"></i><span class="project-status">Active</span></div>
                 <h4>Race Conditions</h4>
                 <p>TOCTOU, privilege escalation, data corruption</p>
                 <div class="project-tags"><span>Race Condition</span><span>TOCTOU</span></div>
-                <a href="#" class="project-link">Race Conditions Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-RaceConditions" class="project-link">Race Conditions Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-database"></i><span class="project-status">Active</span></div>
                 <h4>NoSQL Injection</h4>
                 <p>MongoDB, injection, data extraction</p>
                 <div class="project-tags"><span>NoSQL</span><span>MongoDB</span></div>
-                <a href="#" class="project-link">NoSQL Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-NoSQL" class="project-link">NoSQL Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-code-branch"></i><span class="project-status">Active</span></div>
                 <h4>API Testing</h4>
                 <p>REST API, authentication, authorization</p>
                 <div class="project-tags"><span>REST API</span><span>API Security</span></div>
-                <a href="#" class="project-link">API Testing Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-API" class="project-link">API Testing Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-brain"></i><span class="project-status">Active</span></div>
                 <h4>Web LLM Attacks</h4>
                 <p>Prompt injection, data leakage</p>
                 <div class="project-tags"><span>LLM</span><span>Prompt Injection</span></div>
-                <a href="#" class="project-link">Web LLM Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-LLM" class="project-link">Web LLM Labs →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-copy"></i><span class="project-status">Active</span></div>
                 <h4>Cache Deception</h4>
                 <p>Data exposure, cache exploitation</p>
                 <div class="project-tags"><span>Cache Deception</span><span>Data Exposure</span></div>
-                <a href="#" class="project-link">Cache Deception Labs →</a>
+                <a href="https://github.com/anxs3c/WebSec-CacheDeception" class="project-link">Cache Deception Labs →</a>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 42 School Projects -->
         <div class="projects-section collapsible-section open-by-default">
           <h3 class="section-subtitle-sm collapsible-trigger" id="fortyTwoTrigger">
             <span><i class="fas fa-school"></i> 42 School – C Projects</span>
@@ -599,69 +594,68 @@
                 <h4>Born2beroot</h4>
                 <p>Linux system administration and virtualization</p>
                 <div class="project-tags"><span>Linux</span><span>Virtualization</span></div>
-                <a href="#" class="project-link">GitHub →</a>
+                <a href="https://github.com/anxs3c/Born2beroot" class="project-link">GitHub →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-terminal"></i><span class="project-status">Completed</span></div>
                 <h4>Minishell</h4>
                 <p>Bash‑inspired shell with pipes, signals, built‑ins</p>
                 <div class="project-tags"><span>C</span><span>Unix</span></div>
-                <a href="#" class="project-link">GitHub →</a>
+                <a href="https://github.com/anxs3c/Minishell" class="project-link">GitHub →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-utensils"></i><span class="project-status">Completed</span></div>
                 <h4>Philosophers</h4>
                 <p>Dining Philosophers with threads and mutexes</p>
                 <div class="project-tags"><span>Threads</span><span>Mutex</span></div>
-                <a href="#" class="project-link">GitHub →</a>
+                <a href="https://github.com/anxs3c/Philosophers" class="project-link">GitHub →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-comment-dots"></i><span class="project-status">Completed</span></div>
                 <h4>Minitalk</h4>
                 <p>Client/Server communication using signals</p>
                 <div class="project-tags"><span>Signals</span><span>IPC</span></div>
-                <a href="#" class="project-link">GitHub →</a>
+                <a href="https://github.com/anxs3c/Minitalk" class="project-link">GitHub →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-sort"></i><span class="project-status">Completed</span></div>
                 <h4>Push_swap</h4>
                 <p>Sorting algorithm with stack operations</p>
                 <div class="project-tags"><span>Algorithms</span><span>Stack</span></div>
-                <a href="#" class="project-link">GitHub →</a>
+                <a href="https://github.com/anxs3c/Push_swap" class="project-link">GitHub →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-file-alt"></i><span class="project-status">Completed</span></div>
                 <h4>Get_next_line</h4>
                 <p>Line‑by‑line file reader with buffer management</p>
                 <div class="project-tags"><span>File I/O</span><span>Buffer</span></div>
-                <a href="#" class="project-link">GitHub →</a>
+                <a href="https://github.com/anxs3c/Get_next_line" class="project-link">GitHub →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-print"></i><span class="project-status">Completed</span></div>
                 <h4>Ft_printf</h4>
                 <p>Custom printf implementation</p>
                 <div class="project-tags"><span>Formatting</span><span>Variadic Functions</span></div>
-                <a href="#" class="project-link">GitHub →</a>
+                <a href="https://github.com/anxs3c/Ft_printf" class="project-link">GitHub →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-book"></i><span class="project-status">Completed</span></div>
                 <h4>Libft</h4>
                 <p>Reimplementation of C standard library</p>
                 <div class="project-tags"><span>Library</span><span>Fundamentals</span></div>
-                <a href="#" class="project-link">GitHub →</a>
+                <a href="https://github.com/anxs3c/Libft" class="project-link">GitHub →</a>
               </div>
               <div class="project-card">
                 <div class="project-header"><i class="fas fa-infinity"></i><span class="project-status">Completed</span></div>
                 <h4>Fractol</h4>
                 <p>Interactive fractal renderer</p>
                 <div class="project-tags"><span>Graphics</span><span>Math</span></div>
-                <a href="#" class="project-link">GitHub →</a>
+                <a href="https://github.com/anxs3c/Fractol" class="project-link">GitHub →</a>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Compromised Machines (pagination) -->
         <div class="machines-section collapsible-section open-by-default">
           <h3 class="section-subtitle-sm collapsible-trigger" id="machinesTrigger">
             <span><i class="fas fa-server"></i> Compromised Machines</span>
@@ -685,7 +679,6 @@
             </div>
 
             <div class="machine-grid" id="machineGrid">
-              <!-- Page 1 (1–6) -->
               <div class="machine-card" data-page="1" data-os="windows" data-status="rooted">
                 <div class="machine-info">
                   <div class="machine-header"><span class="machine-index">01</span><h4>Support</h4><span class="os-tag windows">Windows</span><span class="machine-status rooted">Rooted</span></div>
@@ -693,6 +686,14 @@
                   <div class="machine-techniques"><span>SMB Access</span><span>Binary Analysis</span><span>XOR Decryption</span><span>LDAP Enumeration</span><span>RBCD</span><span>DCSync</span></div>
                 </div>
                 <a href="#" class="machine-link">Read →</a>
+              </div>
+              <div class="machine-card" data-page="1" data-os="linux" data-status="rooted">
+                <div class="machine-info">
+                  <div class="machine-header"><span class="machine-index">05</span><h4>TwoMillion</h4><span class="os-tag linux">Linux</span><span class="machine-status rooted">Rooted</span></div>
+                  <div class="machine-meta"><span class="machine-focus">Web → Kernel</span><span>OverlayFS</span></div>
+                  <div class="machine-techniques"><span>JS Deobfuscation</span><span>API Enumeration</span><span>OS Command Injection</span><span>OverlayFS Kernel Exploit</span></div>
+                </div>
+                <a href="https://github.com/anxs3c/TwoMillion-Machine" class="machine-link">Read →</a>
               </div>
               <div class="machine-card" data-page="1" data-os="windows" data-status="rooted">
                 <div class="machine-info">
@@ -720,22 +721,12 @@
               </div>
               <div class="machine-card" data-page="1" data-os="linux" data-status="rooted">
                 <div class="machine-info">
-                  <div class="machine-header"><span class="machine-index">05</span><h4>TwoMillion</h4><span class="os-tag linux">Linux</span><span class="machine-status rooted">Rooted</span></div>
-                  <div class="machine-meta"><span class="machine-focus">Web → Kernel</span><span>OverlayFS</span></div>
-                  <div class="machine-techniques"><span>JS Deobfuscation</span><span>API Enumeration</span><span>OS Command Injection</span><span>OverlayFS Kernel Exploit</span></div>
-                </div>
-                <a href="https://github.com/anxs3c/TwoMillion-Machine" class="machine-link">Read →</a>
-              </div>
-              <div class="machine-card" data-page="1" data-os="linux" data-status="rooted">
-                <div class="machine-info">
                   <div class="machine-header"><span class="machine-index">06</span><h4>Editor</h4><span class="os-tag linux">Linux</span><span class="machine-status rooted">Rooted</span></div>
                   <div class="machine-meta"><span class="machine-focus">Web → Root</span><span>XWiki · PATH</span></div>
                   <div class="machine-techniques"><span>XWiki RCE CVE‑2025‑24893</span><span>SSH Access</span><span>PATH Hijacking</span><span>CVE‑2024‑32019</span></div>
                 </div>
                 <a href="https://github.com/anxs3c/Editor-CTF-writre-up" class="machine-link">Read →</a>
               </div>
-
-              <!-- Page 2 (7–12) -->
               <div class="machine-card" data-page="2" data-os="linux" data-status="rooted">
                 <div class="machine-info">
                   <div class="machine-header"><span class="machine-index">07</span><h4>Facts</h4><span class="os-tag linux">Linux</span><span class="machine-status rooted">Rooted</span></div>
@@ -766,7 +757,7 @@
                   <div class="machine-meta"><span class="machine-focus">IDOR → Root</span><span>PCAP · setuid</span></div>
                   <div class="machine-techniques"><span>IDOR</span><span>PCAP Traffic Analysis</span><span>Credential Reuse</span><span>Python setuid Exploit</span></div>
                 </div>
-                <a href="#" class="machine-link">Read →</a>
+                <a href="https://github.com/anxs3c//cap_machine_writeup" class="machine-link">Read →</a>
               </div>
               <div class="machine-card" data-page="2" data-os="linux" data-status="rooted">
                 <div class="machine-info">
@@ -784,8 +775,6 @@
                 </div>
                 <a href="#" class="machine-link">Read →</a>
               </div>
-
-              <!-- Page 3 (13–18) -->
               <div class="machine-card" data-page="3" data-os="linux" data-status="rooted">
                 <div class="machine-info">
                   <div class="machine-header"><span class="machine-index">13</span><h4>WingData</h4><span class="os-tag linux">Linux</span><span class="machine-status rooted">Rooted</span></div>
@@ -831,8 +820,6 @@
                   <div class="machine-techniques"><span>OpenNetAdmin RCE</span><span>SSH Key Extraction</span><span>Sudo NANO</span><span>Privilege Escalation</span></div>
                 </div>
               </div>
-
-              <!-- Page 4 (19–27) -->
               <div class="machine-card" data-page="4" data-os="windows" data-status="inprogress">
                 <div class="machine-info">
                   <div class="machine-header"><span class="machine-index">19</span><h4>Forest</h4><span class="os-tag windows">Windows</span><span class="machine-status inprogress">In Progress</span></div>
@@ -898,7 +885,6 @@
               </div>
             </div>
 
-            <!-- Pagination -->
             <div class="machine-pagination" id="machinePagination">
               <button class="page-nav" id="prevPage" disabled><i class="fas fa-chevron-left"></i></button>
               <div class="page-numbers">
@@ -919,7 +905,6 @@
       </div>
     </section>
 
-    <!-- ===== WRITEUPS ===== -->
     <section class="writeups" id="writeups">
       <div class="container">
         <span class="section-tag">Research</span>
@@ -927,9 +912,9 @@
         <p class="section-subtitle">Detailed walkthroughs and vulnerability research</p>
         <div class="writeup-filters">
           <button class="writeup-filter active" data-filter="all">All</button>
-          <!-- <button class="writeup-filter" data-filter="ad">Active Directory</button>
+          <button class="writeup-filter" data-filter="ad">Active Directory</button>
           <button class="writeup-filter" data-filter="linux">Linux</button>
-          <button class="writeup-filter" data-filter="ics">ICS/OT</button> -->
+          <button class="writeup-filter" data-filter="ics">ICS/OT</button>
         </div>
         <div class="writeup-grid">
           <div class="writeup-card" data-category="ad">
@@ -964,7 +949,6 @@
       </div>
     </section>
 
-    <!-- ===== CERTIFICATIONS ===== -->
     <section class="certifications">
       <div class="container">
         <span class="section-tag">Credentials</span>
@@ -992,14 +976,6 @@
             <div>
               <h4>SC‑100: Design Security Operations</h4>
               <p>Microsoft</p>
-              <span class="cert-status earned">Earned · Nov 2025</span>
-            </div>
-          </div>
-          <div class="cert-item">
-            <span class="cert-icon"><i class="fas fa-certificate"></i></span>
-            <div>
-              <h4>Python 3</h4>
-              <p>CodinGame</p>
               <span class="cert-status earned">Earned · Nov 2025</span>
             </div>
           </div>
@@ -1034,138 +1010,86 @@
       </div>
     </section>
 
-<!-- ===== CONTACT ===== -->
-<section class="contact" id="contact">
-  <div class="container">
-    <div class="contact-wrapper">
-      <div class="contact-info">
-        <span class="section-tag">Connect</span>
-        <h2 class="section-title">Let's Work Together</h2>
-        <p>Interested in security assessments or collaboration?</p>
-        <div class="contact-details">
-          <div class="contact-item">
-            <i class="fas fa-envelope"></i>
-            <a href="mailto:achrafnourix@gmail.com">achrafnourix@gmail.com</a>
+    <section class="contact" id="contact">
+      <div class="container">
+        <div class="contact-wrapper">
+          <div class="contact-info">
+            <span class="section-tag">Connect</span>
+            <h2 class="section-title">Let's Work Together</h2>
+            <p>Interested in security assessments or collaboration?</p>
+            <div class="contact-details">
+              <div class="contact-item">
+                <i class="fas fa-envelope"></i>
+                <a href="mailto:achrafnouri01@gmail.com">achrafnouri01@gmail.com</a>
+              </div>
+              <div class="contact-item">
+                <i class="fab fa-github"></i>
+                <a href="https://github.com/anxs3c" target="_blank">anxs3c</a>
+              </div>
+              <div class="contact-item">
+                <i class="fab fa-linkedin-in"></i>
+                <a href="https://www.linkedin.com/in/achraf-nouri/" target="_blank">LinkedIn</a>
+              </div>
+            </div>
+            <div class="contact-status">
+              <span class="dot"></span>Available for freelance engagements
+            </div>
           </div>
-          <div class="contact-item">
-            <i class="fab fa-github"></i>
-            <a href="https://github.com/anxs3c" target="_blank">anxs3c</a>
-          </div>
-          <div class="contact-item">
-            <i class="fab fa-linkedin-in"></i>
-            <a href="https://www.linkedin.com/in/achraf-nouri/" target="_blank">LinkedIn</a>
-          </div>
-        </div>
-        <div class="contact-status">
-          <span class="dot"></span>Available for freelance engagements
+
+          <form class="contact-form" id="contactForm" action="https://formspree.io/f/mpqgrapa" method="POST">
+            <div style="display:none;">
+              <label for="website">Website</label>
+              <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="contactName">Name <span class="required">*</span></label>
+                <input type="text" id="contactName" name="name" placeholder="Your name" required />
+              </div>
+              <div class="form-group">
+                <label for="contactEmail">Email <span class="required">*</span></label>
+                <input type="email" id="contactEmail" name="email" placeholder="your@email.com" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="contactSubject">Subject <span class="required">*</span></label>
+              <input type="text" id="contactSubject" name="subject" placeholder="What's this about?" required />
+            </div>
+
+            <div class="form-group">
+              <label for="contactMessage">Message <span class="required">*</span></label>
+              <textarea id="contactMessage" name="message" rows="4" placeholder="Tell me about your project…" required></textarea>
+              <div class="char-counter">
+                <span id="charCount">0</span> / 2000 characters
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" id="submitBtn">
+                <i class="fas fa-paper-plane"></i> Send Message
+              </button>
+              <div class="form-status" id="formStatus"></div>
+            </div>
+
+            <div class="form-security">
+              <i class="fas fa-shield-alt"></i>
+              <span>Your information is secure</span>
+            </div>
+          </form>
         </div>
       </div>
+    </section>
 
-      <!-- Formspree Form - Works with GitHub Pages -->
-      <form class="contact-form" id="contactForm" action="https://formspree.io/f/mpqgrapa" method="POST">
-        
-        <!-- Honeypot field - hidden from real users -->
-        <div style="display:none;">
-          <label for="website">Website</label>
-          <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" />
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="contactName">Name <span class="required">*</span></label>
-            <input 
-              type="text" 
-              id="contactName" 
-              name="name" 
-              placeholder="Your name" 
-              required 
-            />
-          </div>
-          <div class="form-group">
-            <label for="contactEmail">Email <span class="required">*</span></label>
-            <input 
-              type="email" 
-              id="contactEmail" 
-              name="email" 
-              placeholder="your@email.com" 
-              required 
-            />
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="contactSubject">Subject <span class="required">*</span></label>
-          <input 
-            type="text" 
-            id="contactSubject" 
-            name="subject" 
-            placeholder="What's this about?" 
-            required 
-          />
-        </div>
-
-        <div class="form-group">
-          <label for="contactMessage">Message <span class="required">*</span></label>
-          <textarea 
-            id="contactMessage" 
-            name="message" 
-            rows="4" 
-            placeholder="Tell me about your project…" 
-            required
-          ></textarea>
-          <div class="char-counter">
-            <span id="charCount">0</span> / 2000 characters
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary" id="submitBtn">
-            <i class="fas fa-paper-plane"></i> Send Message
-          </button>
-          <div class="form-status" id="formStatus"></div>
-        </div>
-
-        <div class="form-security">
-          <i class="fas fa-shield-alt"></i>
-          <span>Your information is secure</span>
-        </div>
-      </form>
-    </div>
-  </div>
-</section>
   </main>
 
-  <!-- ===== FOOTER ===== -->
   <footer class="footer">
     <div class="container">
       <div class="footer-grid">
         <div>
           <a href="#" class="footer-logo">ANXS<span>3C</span></a>
           <p>Red Team Operator · Offensive Security</p>
-          <div class="footer-social">
-            <a href="https://github.com/achnouri" target="_blank"><i class="fab fa-github"></i></a>
-            <a href="https://www.linkedin.com/in/achraf-nouri/" target="_blank"><i class="fab fa-linkedin-in"></i></a>
-            <a href="#" target="_blank"><i class="fab fa-x-twitter"></i></a>
-            <a href="https://app.hackthebox.com/public/users/1859770" target="_blank"><i class="fas fa-cube"></i></a>
-          </div>
-        </div>
-        <div>
-          <h4>Navigate</h4>
-          <ul>
-            <li><a href="#about">About</a></li>
-            <li><a href="#expertise">Expertise</a></li>
-            <li><a href="#portfolio">Portfolio</a></li>
-            <li><a href="#writeups">Writeups</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4>Explore</h4>
-          <ul>
-            <li><a href="#insights">Insights</a></li>
-            <li><a href="#archive">Archive</a></li>
-            <li><a href="#contact">Contact</a></li>
-            <li><a href="https://github.com/achnouri" target="_blank">GitHub</a></li>
-          </ul>
         </div>
       </div>
       <div class="footer-bottom">
