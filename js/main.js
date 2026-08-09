@@ -1,4 +1,3 @@
-// THEME TOGGLE
 const themeToggle = document.getElementById('themeToggle');
 const icon = themeToggle.querySelector('i');
 
@@ -16,7 +15,6 @@ themeToggle.addEventListener('click', () => {
     setTheme(current === 'light' ? 'dark' : 'light');
 });
 
-// HAMBURGER MENU
 const hamburger = document.getElementById('hamburger');
 const navLinks = document.getElementById('navLinks');
 
@@ -32,8 +30,7 @@ document.querySelectorAll('.nav-links a').forEach(link => {
     });
 });
 
-// TYPING EFFECT
-const words = ['Red Team Operator', 'Penetration Tester', 'Active Directory Security'];
+const words = ['Jr Red Team Operator', 'Jr Penetration Tester', 'Active Directory Security'];
 let wordIndex = 0, charIndex = 0, isDeleting = false;
 const typedText = document.getElementById('typed-text');
 
@@ -61,7 +58,6 @@ function typeEffect() {
 }
 typeEffect();
 
-// PROGRESS BAR
 const progressBar = document.getElementById('progressBar');
 window.addEventListener('scroll', () => {
     const scrollTop = window.scrollY;
@@ -70,7 +66,6 @@ window.addEventListener('scroll', () => {
     progressBar.style.width = progress + '%';
 });
 
-// BACK TO TOP
 const backToTop = document.getElementById('backToTop');
 window.addEventListener('scroll', () => {
     backToTop.classList.toggle('visible', window.scrollY > 500);
@@ -79,7 +74,6 @@ backToTop.addEventListener('click', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-// STATS COUNTER
 const counters = document.querySelectorAll('.stat-number[data-count]');
 const statsSection = document.querySelector('.stats-bar');
 
@@ -107,7 +101,6 @@ const observer = new IntersectionObserver((entries) => {
 
 if (statsSection) observer.observe(statsSection);
 
-// COLLAPSIBLE SECTIONS - SMART ANIMATION
 document.addEventListener('DOMContentLoaded', function() {
     const allSections = document.querySelectorAll('.projects-section');
     
@@ -119,9 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const icon = trigger.querySelector('.collapse-icon i');
         
-        // Set initial state
         if (index < 3) {
-            // First 3 sections: collapsed
             content.classList.add('closed');
             content.style.maxHeight = '0';
             content.style.overflow = 'hidden';
@@ -134,7 +125,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             trigger.classList.remove('open');
         } else {
-            // Machines section: open
             content.classList.remove('closed');
             content.style.maxHeight = content.scrollHeight + 'px';
             content.style.overflow = 'hidden';
@@ -148,7 +138,6 @@ document.addEventListener('DOMContentLoaded', function() {
             trigger.classList.add('open');
         }
         
-        // Click handler with smart animation
         trigger.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
@@ -158,10 +147,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const targetIcon = this.querySelector('.collapse-icon i');
             
             if (isOpen) {
-                // === CLOSE ANIMATION ===
                 this.classList.remove('open');
                 
-                // Animate height to 0
                 targetContent.style.maxHeight = targetContent.scrollHeight + 'px';
                 requestAnimationFrame(() => {
                     targetContent.style.maxHeight = '0';
@@ -169,7 +156,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     targetContent.style.transform = 'translateY(-10px)';
                 });
                 
-                // Update icon with rotation animation
                 if (targetIcon) {
                     targetIcon.style.transform = 'rotate(-90deg)';
                     setTimeout(() => {
@@ -178,30 +164,25 @@ document.addEventListener('DOMContentLoaded', function() {
                     }, 300);
                 }
                 
-                // After animation completes, hide completely
                 setTimeout(() => {
                     targetContent.classList.add('closed');
                     targetContent.style.display = 'none';
                 }, 400);
                 
             } else {
-                // === OPEN ANIMATION ===
                 this.classList.add('open');
                 
-                // Show and prepare for animation
                 targetContent.classList.remove('closed');
                 targetContent.style.display = 'block';
                 targetContent.style.maxHeight = '0';
                 targetContent.style.opacity = '0';
                 targetContent.style.transform = 'translateY(-10px)';
                 
-                // Update icon with rotation animation
                 if (targetIcon) {
                     targetIcon.className = 'fas fa-chevron-down';
                     targetIcon.style.transform = 'rotate(0deg)';
                 }
                 
-                // Trigger animation
                 requestAnimationFrame(() => {
                     const height = targetContent.scrollHeight;
                     targetContent.style.maxHeight = height + 'px';
@@ -209,7 +190,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     targetContent.style.transform = 'translateY(0)';
                 });
                 
-                // Clean up after animation
                 setTimeout(() => {
                     targetContent.style.maxHeight = 'none';
                     targetContent.style.overflow = 'visible';
@@ -219,7 +199,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// MACHINES FILTER & PAGINATION - WITH ANIMATION
 document.addEventListener('DOMContentLoaded', function() {
     const filterBtns = document.querySelectorAll('.filter-btn');
     const machineCards = document.querySelectorAll('.machine-card');
@@ -271,7 +250,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (currentPage > totalPages) currentPage = 1;
 
-        // Animate cards out
         machineCards.forEach(card => {
             card.style.transition = 'all 0.3s ease';
             card.style.opacity = '0';
@@ -279,12 +257,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         setTimeout(() => {
-            // Hide all cards
             machineCards.forEach(card => {
                 card.style.display = 'none';
             });
 
-            // Show and animate in new cards
             const start = (currentPage - 1) * itemsPerPage;
             const end = Math.min(start + itemsPerPage, totalItems);
             const pageItems = visibleCards.slice(start, end);
@@ -301,12 +277,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 50 + (index * 80));
             });
 
-            // Update pagination info
             if (totalCount) totalCount.textContent = totalItems;
             if (startCount) startCount.textContent = totalItems > 0 ? start + 1 : 0;
             if (endCount) endCount.textContent = end;
 
-            // Update page buttons
             const totalPagesDisplay = Math.ceil(totalItems / itemsPerPage) || 1;
             const pageNumbersContainer = document.querySelector('.page-numbers');
             if (pageNumbersContainer) {
@@ -333,13 +307,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 300);
     }
 
-    // Filter button clicks with animation
     filterBtns.forEach(btn => {
         btn.addEventListener('click', function() {
             filterBtns.forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             
-            // Animate filter button
             this.style.transform = 'scale(0.95)';
             setTimeout(() => {
                 this.style.transform = 'scale(1)';
@@ -396,7 +368,6 @@ document.addEventListener('DOMContentLoaded', function() {
     updateDisplay();
 });
 
-// WRITEUP FILTER
 const writeupFilters = document.querySelectorAll('.writeup-filter');
 const writeupCards = document.querySelectorAll('.writeup-card');
 
@@ -425,7 +396,6 @@ if (writeupFilters.length) {
     });
 }
 
-// ARCHIVE FILTER
 const archiveFilters = document.querySelectorAll('.archive-filter');
 const archiveItems = document.querySelectorAll('.archive-item');
 
@@ -453,7 +423,7 @@ if (archiveFilters.length) {
         });
     });
 }
-// CONTACT FORM - Formspree AJAX Submission
+
 document.addEventListener('DOMContentLoaded', function() {
   const form = document.getElementById('contactForm');
   if (!form) return;
@@ -463,7 +433,6 @@ document.addEventListener('DOMContentLoaded', function() {
   const charCount = document.getElementById('charCount');
   const messageField = document.getElementById('contactMessage');
 
-  // Character counter
   if (messageField && charCount) {
     messageField.addEventListener('input', function() {
       const len = this.value.length;
@@ -472,7 +441,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Real-time field validation
   function validateField(field) {
     const group = field.closest('.form-group');
     if (!group) return true;
@@ -527,7 +495,6 @@ document.addEventListener('DOMContentLoaded', function() {
     return true;
   }
 
-  // Add validation to all inputs
   const inputs = form.querySelectorAll('input, textarea');
   inputs.forEach(input => {
     input.addEventListener('blur', function() { validateField(this); });
@@ -538,11 +505,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // Form submission with AJAX
   form.addEventListener('submit', async function(e) {
     e.preventDefault();
 
-    // Validate all fields
     let isValid = true;
     const requiredFields = form.querySelectorAll('[required]');
     requiredFields.forEach(field => {
@@ -554,12 +519,10 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    // Show loading state
     submitBtn.classList.add('btn-loading');
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
     setStatus('Sending your message...', 'loading');
 
-    // Get form data
     const formData = new FormData(form);
 
     try {
@@ -578,7 +541,6 @@ document.addEventListener('DOMContentLoaded', function() {
         form.querySelectorAll('.form-group.success').forEach(el => {
           el.classList.remove('success');
         });
-        // Reset button after 3 seconds
         setTimeout(() => {
           submitBtn.classList.remove('btn-loading');
           submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Message';
@@ -597,13 +559,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Helper function to update status
   function setStatus(message, type) {
     if (!formStatus) return;
     formStatus.textContent = message;
     formStatus.className = 'form-status ' + type;
     
-    // Auto-hide success messages after 5 seconds
     if (type === 'success') {
       setTimeout(() => {
         if (formStatus.textContent === message) {
@@ -615,7 +575,6 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-// KEYBOARD ACCESSIBILITY
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         navLinks.classList.remove('open');
@@ -623,7 +582,6 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// SKILL BARS ANIMATION
 document.addEventListener('DOMContentLoaded', function() {
     const skillBars = document.querySelectorAll('.skill-bar-fill');
     
@@ -648,7 +606,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// CV MODAL
 document.addEventListener('DOMContentLoaded', function() {
     const cvButton = document.getElementById('cvButton');
     const cvModal = document.getElementById('cvModal');
@@ -684,7 +641,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// CUSTOM CURSOR
 document.addEventListener('DOMContentLoaded', function() {
     const cursorDot = document.getElementById('cursorDot');
     const cursorRing = document.getElementById('cursorRing');
@@ -712,5 +668,77 @@ document.addEventListener('DOMContentLoaded', function() {
         cursorDot.style.display = 'none';
         cursorRing.style.display = 'none';
         document.body.style.cursor = 'auto';
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const cvButton = document.getElementById('cvButton');
+    const cvModal = document.getElementById('cvModal');
+    const cvModalClose = document.getElementById('cvModalClose');
+    const cvDownloadBtn = document.getElementById('cvDownloadBtn');
+    const cvContactBtn = document.querySelector('.cv-contact-btn');
+    
+    if (cvButton && cvModal) {
+        cvButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            cvModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        
+        function closeModal() {
+            cvModal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        if (cvModalClose) {
+            cvModalClose.addEventListener('click', closeModal);
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && cvModal.classList.contains('active')) {
+                closeModal();
+            }
+        });
+        
+        cvModal.addEventListener('click', function(e) {
+            if (e.target === cvModal) {
+                closeModal();
+            }
+        });
+        
+        if (cvDownloadBtn) {
+            cvDownloadBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing...';
+                this.disabled = true;
+                
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fas fa-check"></i> Coming Soon!';
+                    this.style.background = '#00ff88';
+                    this.style.color = '#000';
+                    
+                    setTimeout(() => {
+                        this.innerHTML = originalText;
+                        this.disabled = false;
+                        this.style.background = '';
+                        this.style.color = '';
+                    }, 2000);
+                }, 1500);
+            });
+        }
+        
+        if (cvContactBtn) {
+            cvContactBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                closeModal();
+                setTimeout(() => {
+                    document.getElementById('contact')?.scrollIntoView({ 
+                        behavior: 'smooth' 
+                    });
+                }, 300);
+            });
+        }
     }
 });
