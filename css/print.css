@@ -6,9 +6,20 @@
         display: none !important;
     }
 
-    body { background: #fff !important; color: #000 !important; }
-    .section-title { -webkit-text-fill-color: #000 !important; background: none !important; }
-    .hero-avatar { box-shadow: none !important; border: 2px solid #000 !important; }
+    body {
+        background: #fff !important;
+        color: #000 !important;
+    }
+
+    .section-title {
+        -webkit-text-fill-color: #000 !important;
+        background: none !important;
+    }
+
+    .hero-avatar {
+        box-shadow: none !important;
+        border: 2px solid #000 !important;
+    }
 
     .expertise-card, .project-card, .writeup-card, .insight-card,
     .cert-item, .machine-card, .archive-item {
@@ -18,27 +29,103 @@
         box-shadow: none !important;
     }
 
-    .stats-grid .stat-item { border: 1px solid #ddd !important; }
-    .stat-number { color: #000 !important; }
+    .stats-grid .stat-item {
+        border: 1px solid #ddd !important;
+    }
 
-    .hero-wrapper { grid-template-columns: 1fr !important; text-align: center; }
-    .hero-visual { order: -1; }
-    .hero-avatar { width: 120px !important; height: 120px !important; font-size: 2.5rem !important; }
-    .hero h1 .name { font-size: 2rem !important; }
+    .stat-number {
+        color: #000 !important;
+    }
 
-    .about-quote { border-left-color: #000 !important; }
-    .machine-status { border: 1px solid #000 !important; color: #000 !important; background: transparent !important; }
-    .os-tag { border: 1px solid #000 !important; color: #000 !important; background: transparent !important; }
+    .hero-wrapper {
+        grid-template-columns: 1fr !important;
+        text-align: center !important;
+    }
 
-    .footer { border-top: 1px solid #ddd !important; }
-    .footer-bottom { border-top: 1px solid #ddd !important; }
-    .footer-grid { grid-template-columns: 1fr !important; }
+    .hero-visual {
+        order: -1 !important;
+    }
 
-    .section-tag { border-color: #000 !important; color: #000 !important; background: transparent !important; }
-    .hero-badge { border-color: #000 !important; }
-    .hero-badge .dot { background: #000 !important; }
-    .contact-status .dot { background: #000 !important; }
-    .project-status { border-color: #000 !important; color: #000 !important; background: transparent !important; }
-    .writeup-difficulty { border: 1px solid #000 !important; color: #000 !important; background: transparent !important; }
-    .cert-status { border: 1px solid #000 !important; color: #000 !important; background: transparent !important; }
+    .hero-avatar {
+        width: 120px !important;
+        height: 120px !important;
+        font-size: 2.5rem !important;
+    }
+
+    .hero h1 .name {
+        font-size: 2rem !important;
+    }
+
+    .about-highlights {
+        border-color: #ddd !important;
+    }
+
+    .highlight-item {
+        border-color: #ddd !important;
+    }
+
+    .machine-status {
+        border: 1px solid #000 !important;
+        color: #000 !important;
+        background: transparent !important;
+    }
+
+    .os-tag {
+        border: 1px solid #000 !important;
+        color: #000 !important;
+        background: transparent !important;
+    }
+
+    .footer {
+        border-top: 1px solid #ddd !important;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid #ddd !important;
+    }
+
+    .footer-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .section-tag {
+        border-color: #000 !important;
+        color: #000 !important;
+        background: transparent !important;
+    }
+
+    .hero-badge {
+        border-color: #000 !important;
+    }
+
+    .hero-badge .dot {
+        background: #000 !important;
+    }
+
+    .contact-status .dot {
+        background: #000 !important;
+    }
+
+    .project-status {
+        border-color: #000 !important;
+        color: #000 !important;
+        background: transparent !important;
+    }
+
+    .writeup-difficulty {
+        border: 1px solid #000 !important;
+        color: #000 !important;
+        background: transparent !important;
+    }
+
+    .cert-status {
+        border: 1px solid #000 !important;
+        color: #000 !important;
+        background: transparent !important;
+    }
+
+    .avatar-image {
+        filter: grayscale(100%) !important;
+        -webkit-filter: grayscale(100%) !important;
+    }
 }
