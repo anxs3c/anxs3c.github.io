@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Support Machine Writeup - ANXS3C</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    .writeup-container {
+      max-width: 900px;
+      margin: 100px auto 50px;
+      padding: 0 20px;
+    }
+    .writeup-header {
+      margin-bottom: 40px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 20px;
+    }
+    .writeup-header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+    .writeup-meta {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      color: var(--text-muted);
+    }
+    .writeup-meta span {
+      background: var(--bg-card);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+    }
+    .writeup-body {
+      line-height: 1.8;
+    }
+    .writeup-body h2 {
+      margin-top: 40px;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border-color);
+    }
+    .writeup-body h3 {
+      margin-top: 30px;
+      margin-bottom: 15px;
+    }
+    .writeup-body pre {
+      background: var(--bg-card);
+      padding: 20px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      margin: 20px 0;
+      border: 1px solid var(--border-color);
+    }
+    .writeup-body code {
+      background: var(--bg-card);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 40px;
+      padding: 12px 24px;
+      background: var(--primary-color);
+      color: white;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: opacity 0.3s;
+    }
+    .back-link:hover {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar" id="navbar">
+    <div class="container">
+      <a href="/" class="logo"><span>🛡️ </span>ANXS<span>3C</span></a>
+      <ul class="nav-links">
+        <li><a href="/#expertise">Expertise</a></li>
+        <li><a href="/#portfolio">Projects</a></li>
+        <li><a href="/#writeups">Writeups</a></li>
+        <li><a href="/#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+    <div class="writeup-container">
+      <div class="writeup-header">
+        <h1>Support Machine Writeup</h1>
+        <div class="writeup-meta">
+          <span><i class="fas fa-tag"></i> Active Directory</span>
+          <span><i class="fas fa-signal"></i> Medium</span>
+          <span><i class="fas fa-calendar"></i> June 2026</span>
+          <span><i class="fas fa-server"></i> Windows</span>
+        </div>
+      </div>
+
+      <div class="writeup-body">
+        <h2>Introduction</h2>
+        <p>This is a detailed walkthrough of the Support machine, covering AD enumeration, RBCD abuse, and DCSync attacks...</p>
+
+        <h2>Reconnaissance</h2>
+        <p>First, let's perform initial enumeration...</p>
+        <pre><code>nmap -sC -sV -p- 10.10.10.10</code></pre>
+
+        <h2>Initial Access</h2>
+        <p>We discover SMB access with anonymous credentials...</p>
+        <pre><code>smbclient -N //10.10.10.10/Share</code></pre>
+
+        <h2>Privilege Escalation</h2>
+        <p>Using RBCD attack to compromise the domain...</p>
+        <pre><code>python3 rbcd.py -t support.local -u user</code></pre>
+
+        <h2>Conclusion</h2>
+        <p>Final thoughts and lessons learned from this machine...</p>
+      </div>
+
+      <a href="/#writeups" class="back-link">
+        <i class="fas fa-arrow-left"></i> Back to Writeups
+      </a>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <span>&copy; 2026 ANXS3C · All rights reserved</span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
