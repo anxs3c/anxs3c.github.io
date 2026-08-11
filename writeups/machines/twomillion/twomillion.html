@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="TwoMillion Machine Writeup - Full Linux compromise through JS deobfuscation, API enumeration, command injection, lateral movement, and CVE-2023-0386 kernel exploitation" />
+  <meta name="keywords" content="TwoMillion, HTB, Linux, Command Injection, CVE-2023-0386, OverlayFS, Kernel Exploit, API Enumeration, ROT13" />
+  <meta name="author" content="ANXS3C" />
+  <title>TwoMillion Machine Writeup - ANXS3C</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="../../../css/style.css" />
+  <link rel="stylesheet" href="../../../css/writeup.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>" />
+</head>
+<body class="writeup-page">
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+  <div class="writeup-progress">
+    <div class="progress-bar" id="writeupProgress"></div>
+  </div>
+  <nav class="navbar" id="navbar">
+    <div class="container">
+      <a href="../../../" class="logo"><span>🛡️ </span>ANXS<span>3C</span></a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="https://anxs3c.github.io/#writeups">Writeups</a></li>
+      </ul>
+      <div class="nav-controls">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <i class="fas fa-moon"></i>
+        </button>
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+  <div class="cyber-lines">
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line-vertical"></div>
+    <div class="line-vertical"></div>
+    <div class="line-vertical"></div>
+  </div>
+  <main id="main">
+    <div class="writeup-container">
+      <header class="writeup-header">
+        <div class="badge">Writeup</div>
+        <h1>TwoMillion <span class="highlight">Machine</span></h1>
+        <p class="subtitle">
+          Full Linux compromise through JS deobfuscation, API enumeration, command injection, 
+          lateral movement via credential reuse, and CVE-2023-0386 kernel exploitation
+        </p>
+        <div class="writeup-meta">
+          <span class="meta-tag"><i class="fas fa-tag"></i> Linux</span>
+          <span class="meta-tag"><i class="fas fa-signal"></i> Easy</span>
+          <span class="meta-tag"><i class="fas fa-calendar"></i> August 2026</span>
+          <span class="meta-tag"><i class="fas fa-server"></i> Ubuntu</span>
+          <span class="meta-tag"><i class="fas fa-clock"></i> 2+ hours</span>
+          <span class="meta-tag"><i class="fab fa-github"></i> <a href="https://github.com/anxs3c" target="_blank">GitHub</a></span>
+        </div>
+      </header>
+      <nav class="toc" aria-label="Table of Contents">
+        <div class="toc-header">
+          <i class="fas fa-list"></i>
+          <h3>Contents</h3>
+        </div>
+        <ul class="toc-grid">
+          <li><a href="#about">About Target</a></li>
+          <li><a href="#phase1">Phase 1 Reconnaissance</a></li>
+          <li><a href="#phase2">Phase 2 Path Discovery</a></li>
+          <li><a href="#phase3">Phase 3 JS Deobfuscation</a></li>
+          <li><a href="#phase4">Phase 4 Account Registration</a></li>
+          <li><a href="#phase5">Phase 5 API Enumeration</a></li>
+          <li><a href="#phase6">Phase 6 Vertical Privilege Escalation</a></li>
+          <li><a href="#phase7">Phase 7 Command Injection</a></li>
+          <li><a href="#phase8">Phase 8 Lateral Movement</a></li>
+          <li><a href="#phase9">Phase 9 Kernel Exploitation</a></li>
+        </ul>
+      </nav>
+      <div class="writeup-body">
+        <h2 id="about">About Target</h2>
+        <p>
+          <strong>TwoMillion</strong> is an Easy difficulty Linux box that was released to celebrate 
+          reaching 2 million users on HackTheBox. The box features an old version of the HackTheBox 
+          platform that includes the old hackable invite code. After hacking the invite code, an account 
+          can be created on the platform. The account can be used to enumerate various API endpoints, 
+          one of which can be used to elevate the user to an Administrator. With administrative access, 
+          the user can perform a command injection in the admin VPN generation endpoint, thus gaining 
+          a system shell. A <code>.env</code> file is found to contain database credentials and due to 
+          password reuse, the attacker can login as user <code>admin</code> on the box. The system kernel 
+          is found to be outdated and <strong>CVE-2023-0386</strong> can be used to gain a root shell.
+        </p>
+        <div class="attack-phase">
+          <h3>Attack Chain</h3>
+          <ol>
+            <li><strong>Phase 1</strong> Reconnaissance &amp; Host Setup</li>
+            <li><strong>Phase 2</strong> Path Discovery &amp; JS Deobfuscation</li>
+            <li><strong>Phase 3</strong> Invite Code Generation &amp; Registration</li>
+            <li><strong>Phase 4</strong> API Enumeration &amp; Vertical Escalation</li>
+            <li><strong>Phase 5</strong> OS Command Injection &amp; Reverse Shell</li>
+            <li><strong>Phase 6</strong> Lateral Movement via Credential Reuse</li>
+            <li><strong>Phase 7</strong> Kernel Exploitation (CVE-2023-0386)</li>
+          </ol>
+        </div>
+        <div style="text-align: center; margin: 32px 0;">
+          <img src="./ims/attackchain.png" alt="Attack Chain Diagram" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <h2 id="phase1">Phase 1 Reconnaissance</h2>
+        <p>
+          I performed an initial active reconnaissance using <code>nmap</code> scanning on the target IP 
+          address to identify open ports and running services.
+        </p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/AddToHosts.png" alt="Hosts file configuration" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        
+        <h3>Scan Results</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Port</th>
+                <th>Service</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>22/tcp</td><td>SSH</td><td>OpenSSH 8.9p1 Ubuntu 3ubuntu0.1 (Ubuntu Linux; protocol 2.0)</td></tr>
+              <tr><td>80/tcp</td><td>HTTP</td><td>nginx 2million.htb</td></tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <h3>Host Setup</h3>
+        <p>I added <code>2million.htb</code> to my <code>/etc/hosts</code> file:</p>
+        <pre data-language="bash"><code><span class="prompt">$</span> <span class="function">sudo</span> <span class="function">echo</span> <span class="string">"10.129.227.172 2million.htb"</span> <span class="operator">>></span> <span class="variable">/etc/hosts</span></code></pre>
+
+        <h2 id="phase2">Phase 2 Path Discovery</h2>
+        <p>
+          I performed a path discovery across <code>2million.htb</code> using <strong>gobuster</strong>. 
+          During enumeration, I discovered the <code>/invite</code> endpoint.
+        </p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/PathDiscovery.png" alt="Path Discovery Results" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        
+        <p>After navigating to the <code>/invite</code> page:</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/InviteCode_form.png" alt="Invite Code Form" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        
+        <p>
+          While inspecting the page, I noticed it loaded a JavaScript file named 
+          <code>inviteapi.min.js</code> containing obfuscated code:
+        </p>
+        <pre data-language="javascript"><code><span class="function">eval</span>(<span class="keyword">function</span>(<span class="variable">p</span>,<span class="variable">a</span>,<span class="variable">c</span>,<span class="variable">k</span>,<span class="variable">e</span>,<span class="variable">d</span>)<span class="operator">{</span><span class="variable">e</span>=<span class="keyword">function</span>(<span class="variable">c</span>)<span class="operator">{</span><span class="keyword">return</span> <span class="variable">c</span>.<span class="function">toString</span>(<span class="number">36</span>)<span class="operator">}</span>;<span class="keyword">if</span>(<span class="operator">!</span><span class="string">''</span>.<span class="function">replace</span>(<span class="operator">/</span><span class="operator">^</span><span class="operator">/</span>,<span class="variable">String</span>))<span class="operator">{</span><span class="keyword">while</span>(<span class="variable">c</span><span class="operator">--</span>)<span class="operator">{</span><span class="variable">d</span>[<span class="variable">c</span>.<span class="function">toString</span>(<span class="variable">a</span>)]=<span class="variable">k</span>[<span class="variable">c</span>]<span class="operator">||</span><span class="variable">c</span>.<span class="function">toString</span>(<span class="variable">a</span>)<span class="operator">}</span><span class="variable">k</span>=[<span class="keyword">function</span>(<span class="variable">e</span>)<span class="operator">{</span><span class="keyword">return</span> <span class="variable">d</span>[<span class="variable">e</span>]<span class="operator">}</span>];<span class="variable">e</span>=<span class="keyword">function</span>()<span class="operator">{</span><span class="keyword">return</span> <span class="string">'\\w+'</span><span class="operator">}</span>;<span class="variable">c</span>=<span class="number">1</span><span class="operator">}</span>;<span class="keyword">while</span>(<span class="variable">c</span><span class="operator">--</span>)<span class="operator">{</span><span class="keyword">if</span>(<span class="variable">k</span>[<span class="variable">c</span>])<span class="operator">{</span><span class="variable">p</span>=<span class="variable">p</span>.<span class="function">replace</span>(<span class="keyword">new</span> <span class="function">RegExp</span>(<span class="string">'\\b'</span>+<span class="variable">e</span>(<span class="variable">c</span>)+<span class="string">'\\b'</span>,<span class="string">'g'</span>),<span class="variable">k</span>[<span class="variable">c</span>])<span class="operator">}</span><span class="operator">}</span><span class="keyword">return</span> <span class="variable">p</span><span class="operator">}</span>(<span class="string">'...'</span>,<span class="number">24</span>,<span class="number">24</span>,<span class="string">'...'</span>.<span class="function">split</span>(<span class="string">'|'</span>),<span class="number">0</span>,<span class="operator">{</span><span class="operator">}</span>))</code></pre>
+
+        <h2 id="phase3">Phase 3 JS Deobfuscation</h2>
+        <p>
+          I deobfuscated the code using <a href="https://thanhle.io.vn/de4js/" target="_blank">de4js</a>, 
+          which produced the following readable JavaScript:
+        </p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/deobfuscator.png" alt="Deobfuscator Results" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        
+        <pre data-language="javascript"><code><span class="keyword">function</span> <span class="function">verifyInviteCode</span>(<span class="variable">code</span>) <span class="operator">{</span>
+    <span class="keyword">var</span> <span class="variable">formData</span> <span class="operator">=</span> <span class="operator">{</span>
+        <span class="string">"code"</span>: <span class="variable">code</span>
+    <span class="operator">}</span>;
+    <span class="variable">$</span>.<span class="function">ajax</span>(<span class="operator">{</span>
+        <span class="variable">type</span>: <span class="string">"POST"</span>,
+        <span class="variable">dataType</span>: <span class="string">"json"</span>,
+        <span class="variable">data</span>: <span class="variable">formData</span>,
+        <span class="variable">url</span>: <span class="string">'/api/v1/invite/verify'</span>,
+        <span class="variable">success</span>: <span class="keyword">function</span> (<span class="variable">response</span>) <span class="operator">{</span>
+            <span class="variable">console</span>.<span class="function">log</span>(<span class="variable">response</span>)
+        <span class="operator">}</span>,
+        <span class="variable">error</span>: <span class="keyword">function</span> (<span class="variable">response</span>) <span class="operator">{</span>
+            <span class="variable">console</span>.<span class="function">log</span>(<span class="variable">response</span>)
+        <span class="operator">}</span>
+    <span class="operator">}</span>)
+<span class="operator">}</span>
+
+<span class="keyword">function</span> <span class="function">makeInviteCode</span>() <span class="operator">{</span>
+    <span class="variable">$</span>.<span class="function">ajax</span>(<span class="operator">{</span>
+        <span class="variable">type</span>: <span class="string">"POST"</span>,
+        <span class="variable">dataType</span>: <span class="string">"json"</span>,
+        <span class="variable">url</span>: <span class="string">'/api/v1/invite/how/to/generate'</span>,
+        <span class="variable">success</span>: <span class="keyword">function</span> (<span class="variable">response</span>) <span class="operator">{</span>
+            <span class="variable">console</span>.<span class="function">log</span>(<span class="variable">response</span>)
+        <span class="operator">}</span>,
+        <span class="variable">error</span>: <span class="keyword">function</span> (<span class="variable">response</span>) <span class="operator">{</span>
+            <span class="variable">console</span>.<span class="function">log</span>(<span class="variable">response</span>)
+        <span class="operator">}</span>
+    <span class="operator">}</span>)
+<span class="operator">}</span></code></pre>
+        
+        <div class="info-box">
+          <strong>Function Analysis:</strong><br>
+          <code>makeInviteCode()</code> → Generates a new invite code<br>
+          <code>verifyInviteCode(code)</code> → Checks if a code is valid
+        </div>
+        
+        <p>To better understand the API, I intercepted the verification request:</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/burpsuite1.png" alt="Burp Suite Intercept" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <p>The API uses <strong>JSON</strong> responses.</p>
+
+        <h3>Generating Invite Code and ROT13 Decryption</h3>
+        <p>I went to the browser console and executed <code>makeInviteCode()</code>:</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/console1.png" alt="Console Execution" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        
+        <p>I noticed that data were encrypted in <strong>ROT13</strong> cipher:</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/rot13_decryption.png" alt="ROT13 Decryption" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        
+        <p>After decryption, I found the endpoint <code>/api/v1/invite/generate</code>:</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/GeneratedKey.png" alt="Generated Key" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        
+        <h4>Base64 Decryption</h4>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/DecryptedB64GeneratedKey.png" alt="Base64 Decryption" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        
+        <div class="success-box">
+          <strong>Invite Code Obtained:</strong> <code>2F4BN-YI8OH-B0SCL-L8OE6</code>
+        </div>
+
+        <h2 id="phase4">Phase 4 Account Registration</h2>
+        <p>The key was inserted and accepted successfully:</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/insertKey.png" alt="Insert Key" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/registration.png" alt="Registration" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/SuccessRegestration.png" alt="Successful Registration" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        
+        <p>After registration, I gained access to the platform:</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/accessEndpoint.png" alt="Access Page" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <h3>API Endpoints Enumeration</h3>
+        <p>
+          I uploaded a VPN file by clicking on the <strong>Connection Pack</strong> button and intercepted 
+          the <code>GET</code> request:
+        </p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/burpsuite2.png" alt="Burp Suite Intercept 2" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        
+        <p>
+          I then executed a <code>curl</code> request with verbose and silent options to enumerate 
+          available API endpoints:
+        </p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/API_Enum1.png" alt="API Enumeration 1" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/API_Enum2.png" alt="API Enumeration 2" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        
+        <p>
+          The server responded with a <strong>JSON</strong> list of API endpoints. The admin had 
+          <strong>3 API endpoints</strong> with <code>GET</code>, <code>POST</code>, and <code>PUT</code> 
+          methods.
+        </p>
+        
+        <p>
+          When I attempted to generate an admin key with the admin endpoint 
+          <code>/api/v1/admin/vpn/generate</code>, the key was not generated due to insufficient privileges. 
+          The first admin endpoint <code>/api/v1/admin/auth</code> confirmed this:
+        </p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/AdminAuthStatus1.png" alt="Admin Auth Status 1" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/AdminAuthStatus2.png" alt="Admin Auth Status 2" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <h2 id="phase6">Phase 6 Vertical Privilege Escalation</h2>
+        <p>
+          After discovering the correct <code>PUT</code> request format with 
+          <code>Content-Type: application/json</code> and the required parameters, I successfully 
+          escalated my user to an administrator.
+        </p>
+        
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/PUT_updateAdmin1.png" alt="PUT Admin Update 1" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/PUT_updateAdmin2.png" alt="PUT Admin Update 2" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/PUT_updateAdmin3.png" alt="PUT Admin Update 3" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/PUT_updateAdmin4.png" alt="PUT Admin Update 4" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/PUT_updateAdmin5.png" alt="PUT Admin Update 5" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        
+        <div class="success-box">
+          <strong>Vertical Escalation Successful:</strong> <code>is_admin: 0 → 1</code>
+        </div>
+        
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/AdminAuth.png" alt="Admin Auth" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/AdminGenerKey1.png" alt="Admin Generate Key 1" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/AdminGenerKey2.png" alt="Admin Generate Key 2" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/AdminGenerKey3.png" alt="Admin Generate Key 3" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <h2 id="phase7">Phase 7 OS Command Injection</h2>
+        <p>
+          I injected <code>;whoami;</code> into the <code>username</code> field. My suspicion fell on the 
+          <code>exec()</code> or <code>system()</code> PHP functions, which are common in admin-only 
+          features and often lack proper sanitization.
+        </p>
+        
+        <p>For example, the vulnerable code probably looked something like this:</p>
+        <pre data-language="php"><code><span class="variable">$username</span> <span class="operator">=</span> <span class="variable">$json</span><span class="operator">-></span><span class="variable">username</span>;
+
+<span class="function">exec</span>(<span class="string">"/usr/bin/cat /var/www/html/VPN/user/$username.ovpn"</span>);</code></pre>
+        
+        <p>
+          The endpoint <code>POST /api/v1/admin/vpn/generate</code> was vulnerable, and 
+          <strong>OS Command Injection</strong> was performed successfully.
+        </p>
+        
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/OS-Command-Injection1.png" alt="Command Injection 1" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/OS-Command-Injection2.png" alt="Command Injection 2" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/OS-Command-Injection3.png" alt="Command Injection 3" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <h3>Reverse Shell via OS Command Injection (Base64 Bypass)</h3>
+        <p>Since the application had restrictions that prevented special characters, I encoded the reverse shell payload in <strong>base64</strong> to bypass this restriction.</p>
+        
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/B64EncodeRevBash.png" alt="Base64 Encode" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        
+        <p>I injected the payload into the <code>username</code> parameter, piping it to <code>base64 -d | bash</code> for decoding and execution:</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/CurlPostComandInjectionRevShell.png" alt="Curl Payload Injection" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        
+        <h4>Netcat Listener</h4>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/NetcatListening.png" alt="Netcat Listener" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        
+        <div class="success-box">
+          <strong>Initial Access Gained!</strong> Reverse shell as <code>www-data</code> user
+        </div>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/SuccessReverseShell-InitailAccess.png" alt="Reverse Shell Success" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <h2 id="phase8">Phase 8 Lateral Movement</h2>
+        <p>
+          I attempted <strong>lateral movement</strong> from <code>www-data</code> user to the 
+          <code>admin</code> user using various techniques.
+        </p>
+        
+        <p>
+          While inspecting the <code>/var/www/html</code> directory, I discovered a <code>.env</code> file 
+          containing <strong>database credentials</strong>:
+        </p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/LateralMov.png" alt="Lateral Movement" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        
+        <div class="highlight-box">
+          <strong>Discovered Credentials:</strong><br>
+          <code>DB_USERNAME=admin</code><br>
+          <code>DB_PASSWORD=SuperDuperPass123</code>
+        </div>
+        
+        <p>
+          The discovered password was successfully <strong>reused</strong> to authenticate via 
+          <strong>SSH</strong> and <strong>MySQL</strong>:
+        </p>
+        
+        <h4>SSH Authentication</h4>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/ReusePasswSSH.png" alt="SSH Login" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        
+        <h4>MySQL Authentication</h4>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/ReusePasswMySQL.png" alt="MySQL Login" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        
+        <div class="success-box">
+          <strong>Lateral Movement Successful!</strong> Access as <code>admin</code> user via SSH
+        </div>
+
+        <h2 id="phase9">Phase 9 OS Privilege Escalation</h2>
+        <p>
+          After gaining initial access as the <code>admin</code> user, I performed system enumeration to 
+          identify potential privilege escalation vectors.
+        </p>
+        
+        <p>
+          I tried common privilege escalation techniques like SUID binaries, capabilities, sudo rights, 
+          and cron jobs—nothing worked. I then checked <strong>environment variables</strong> for PATH 
+          hijacking or sensitive variables, and I found a <code>MAIL</code> variable pointing to 
+          <code>/var/mail/admin</code>.
+        </p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/PathHijacking.png" alt="Mail Variable" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        
+        <p>I checked the mail content and noticed that the admin had been warned to patch the kernel against an <strong>OverlayFS/FUSE vulnerability</strong>:</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/Mail.png" alt="Mail Warning" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        
+        <h3>Kernel Version Enumeration</h3>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/KernelVersion.png" alt="Kernel Version" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        
+        <h3>OS Version Enumeration</h3>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/OSver.png" alt="OS Version" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        
+        <div class="warning-box">
+          <strong>Critical Finding:</strong> The kernel was never updated, confirming that the administrator 
+          had ignored the security warning. Kernel version <code>5.15.70-051570-generic</code> is vulnerable 
+          to <strong>CVE-2023-0386</strong> (OverlayFS/FUSE local privilege escalation).
+        </div>
+        
+        <h3>Exploit Execution</h3>
+        <p>With the vulnerability confirmed, I proceeded to obtain a public POC exploit:</p>
+        
+        <pre data-language="bash"><code><span class="prompt">$</span> <span class="function">git</span> <span class="function">clone</span> <span class="string">https://github.com/sxlmnwb/CVE-2023-0386</span>
+<span class="prompt">$</span> <span class="function">cd</span> <span class="variable">CVE-2023-0386</span>
+<span class="prompt">$</span> <span class="function">make</span>
+<span class="prompt">$</span> <span class="function">./fuse</span> <span class="operator">&</span> <span class="operator">&</span> <span class="function">./exp</span></code></pre>
+        
+        <p>I cloned the POC, transferred it to the target machine, and executed it successfully:</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/pocExec1.png" alt="POC Execution 1" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./ims/pocExec2RootAccess.png" alt="Root Access" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        
+        <div class="success-box" style="border-left-color: #00c853;">
+          <strong>Root Flag Obtained!</strong> Full system compromise achieved via CVE-2023-0386
+        </div>
+
+        <h3>Complete Attack Chain</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Phase</th>
+                <th>Technique</th>
+                <th>Target</th>
+                <th>Result</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>1. Recon</strong></td>
+                <td>Port Scan</td>
+                <td>22 (SSH), 80 (HTTP)</td>
+                <td>Service discovery</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td>Path Discovery</td>
+                <td><code>/invite</code></td>
+                <td>Invite page found</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td>JS Deobfuscation</td>
+                <td><code>inviteapi.min.js</code></td>
+                <td>API endpoints exposed</td>
+              </tr>
+              <tr>
+                <td><strong>2. Initial Access</strong></td>
+                <td>Invite Generation</td>
+                <td><code>POST /api/v1/invite/generate</code></td>
+                <td>Valid invite code</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td>Registration</td>
+                <td><code>POST /api/v1/user/register</code></td>
+                <td>Standard user created</td>
+              </tr>
+              <tr>
+                <td><strong>3. Web Privesc</strong></td>
+                <td>API Enumeration</td>
+                <td><code>GET /api/v1</code></td>
+                <td>Admin endpoints discovered</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td>Vertical Escalation</td>
+                <td><code>PUT /api/v1/admin/settings/update</code></td>
+                <td><code>is_admin: 0 → 1</code></td>
+              </tr>
+              <tr>
+                <td><strong>4. System Access</strong></td>
+                <td>Command Injection</td>
+                <td><code>POST /api/v1/admin/vpn/generate</code></td>
+                <td><code>username=test;id;</code></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td>Reverse Shell</td>
+                <td>Base64 encoded payload</td>
+                <td><code>www-data</code> shell</td>
+              </tr>
+              <tr>
+                <td><strong>5. Lateral Movement</strong></td>
+                <td>File Discovery</td>
+                <td><code>/var/www/html/.env</code></td>
+                <td><code>admin:SuperDuperPass123</code></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td>SSH Reuse</td>
+                <td><code>ssh admin@2million.htb</code></td>
+                <td><code>admin</code> user access</td>
+              </tr>
+              <tr>
+                <td><strong>6. Root Escalation</strong></td>
+                <td>Kernel Enumeration</td>
+                <td><code>uname -r</code> → <code>5.15.70</code></td>
+                <td>CVE-2023-0386 identified</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td>Email Warning</td>
+                <td><code>/var/mail/admin</code></td>
+                <td>OverlayFS/FUSE confirmed</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td>Exploit Execution</td>
+                <td><code>./fuse && ./exp</code></td>
+                <td>Root shell</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="info-box">
+          <strong>Disclaimer:</strong> All activities in this writeup were conducted within a fully authorized, isolated laboratory environment These techniques are presented solely for educational and defensive security purposes
+        </div>
+
+       
+      </div>
+      <footer class="writeup-footer">
+        <a href="../../../#writeups" class="back-link">
+          <i class="fas fa-arrow-left"></i> Back to Writeups
+        </a>
+        <div class="share-links">
+          <a href="#" aria-label="Share on LinkedIn" title="Share on LinkedIn">
+            <i class="fab fa-linkedin-in"></i>
+          </a>
+          <a href="https://github.com/anxs3c" target="_blank" aria-label="View on GitHub" title="View on GitHub">
+            <i class="fab fa-github"></i>
+          </a>
+        </div>
+      </footer>
+    </div>
+  </main>
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a href="../../../" class="footer-logo">ANXS<span>3C</span></a>
+          <p>Red Team Operator · Offensive Security</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 ANXS3C · All rights reserved</span>
+      </div>
+    </div>
+  </footer>
+  <button class="back-to-top" id="backToTop">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+  <script src="../../../js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const progressBar = document.getElementById('writeupProgress');
+      window.addEventListener('scroll', function() {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = (scrollTop / docHeight) * 100;
+        progressBar.style.width = progress + '%';
+      });
+    });
+  </script>
+</body>
+</html>
