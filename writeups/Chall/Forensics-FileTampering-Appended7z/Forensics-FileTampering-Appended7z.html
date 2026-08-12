@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Forensics Challenge - Hidden 7z Archive in PNG, file tampering investigation, steganography analysis, and data extraction" />
+  <meta name="keywords" content="Forensics, Steganography, PNG, 7z, File Tampering, zsteg, exiftool, binwalk, CTF" />
+  <meta name="author" content="ANXS3C" />
+  <title>Forensics Challenge - Hidden 7z Archive - ANXS3C</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="../../../css/style.css" />
+  <link rel="stylesheet" href="../../../css/writeup.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg><text y='.9em' font-size='90'>🔎</text></svg>">
+</head>
+<body class="writeup-page">
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+  <div class="writeup-progress">
+    <div class="progress-bar" id="writeupProgress"></div>
+  </div>
+  <nav class="navbar" id="navbar">
+    <div class="container">
+      <a href="../../../" class="logo"><span>🛡️ </span>ANXS<span>3C</span></a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="https://anxs3c.github.io/#writeups">Writeups</a></li>
+      </ul>
+      <div class="nav-controls">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <i class="fas fa-moon"></i>
+        </button>
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+  <div class="cyber-lines">
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line-vertical"></div>
+    <div class="line-vertical"></div>
+    <div class="line-vertical"></div>
+  </div>
+  <main id="main">
+    <div class="writeup-container">
+      <header class="writeup-header">
+        <div class="badge">Forensics Challenge</div>
+        <h1>Hidden 7z Archive <span class="highlight">in PNG</span></h1>
+        <p class="subtitle">
+          File tampering investigation — extracting a hidden 7z archive from a PNG image using 
+          steganography analysis, metadata inspection, and data carving techniques
+        </p>
+        <div class="writeup-meta">
+          <span class="meta-tag"><i class="fas fa-tag"></i> Forensics</span>
+          <span class="meta-tag"><i class="fas fa-signal"></i> Easy</span>
+          <span class="meta-tag"><i class="fas fa-calendar"></i> August 2026</span>
+          <span class="meta-tag"><i class="fas fa-image"></i> Steganography</span>
+          <span class="meta-tag"><i class="fas fa-archive"></i> File Carving</span>
+          <span class="meta-tag"><i class="fab fa-github"></i> <a href="https://github.com/anxs3c" target="_blank">GitHub</a></span>
+        </div>
+      </header>
+      <nav class="toc" aria-label="Table of Contents">
+        <div class="toc-header">
+          <i class="fas fa-list"></i>
+          <h3>Contents</h3>
+        </div>
+        <ul class="toc-grid">
+          <li><a href="#scenario">Challenge Scenario</a></li>
+          <li><a href="#analysis">Initial Analysis</a></li>
+          <li><a href="#steganography">Steganography Analysis</a></li>
+          <li><a href="#extraction">Archive Extraction</a></li>
+          <li><a href="#password">Password Discovery</a></li>
+          <li><a href="#flag">Flag Extraction</a></li>
+          <li><a href="#summary">Summary</a></li>
+        </ul>
+      </nav>
+      <div class="writeup-body">
+        <h2 id="scenario">Challenge Scenario</h2>
+        
+        <div class="warning-box">
+          <strong>Challenge Subject:</strong><br>
+          The interception of a transmission has occurred, with only a network capture remaining. 
+          Recover the flag before the trail goes cold.<br><br>
+          <strong>Challenge File:</strong> <code>wallpaper.png</code>
+        </div>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/chall_img1.png" alt="Challenge Image" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <h2 id="analysis">1. Initial Analysis</h2>
+        <p>
+          The first thing I did was gather information about the PNG file using various forensic tools:
+        </p>
+
+        <pre data-language="bash"><code><span class="prompt">└╼$</span> <span class="function">ls</span> <span class="operator">-</span><span class="function">lh</span> <span class="variable">wallpaper.png</span>
+<span class="prompt">└╼$</span> <span class="function">file</span> <span class="variable">wallpaper.png</span>
+<span class="prompt">└╼$</span> <span class="function">exiftool</span> <span class="variable">wallpaper.png</span>
+<span class="prompt">└╼$</span> <span class="function">xxd</span> <span class="variable">wallpaper.png</span>
+<span class="prompt">└╼$</span> <span class="function">binwalk</span> <span class="variable">wallpaper.png</span></code></pre>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/chall_img2.png" alt="Initial Analysis Results" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <h3>Key Finding</h3>
+        <div class="highlight-box">
+          <strong>ExifTool Warning:</strong><br>
+          <code>Warning: [minor] Trailer data after PNG IEND chunk</code>
+        </div>
+
+        <div class="info-box">
+          <strong>Analysis:</strong><br>
+          This indicates the presence of extraneous or <strong>appended data</strong> beyond the logical end 
+          of the PNG file structure.<br><br>
+          In the PNG format, the <code>IEND chunk</code> represents the official termination of the image 
+          data stream. Any <strong>bytes</strong> located after this chunk are not part of the legitimate 
+          image rendering structure and may indicate:
+          <ul style="margin: 8px 0 0 20px;">
+            <li>Hidden data</li>
+            <li>Steganography content</li>
+            <li>File tampering</li>
+          </ul>
+        </div>
+
+        <h2 id="steganography">2. Steganography Analysis with zsteg</h2>
+        <p>
+          I used the <strong>zsteg</strong> tool to analyze the hidden data inside the image:
+        </p>
+
+        <pre data-language="bash"><code><span class="prompt">└╼ANRx07$</span> <span class="function">zsteg</span> <span class="variable">wallpaper.png</span>
+<span class="output">[?] 235 bytes of extra data after image end (IEND), offset = 0xef18
+extradata:0         .. file: 7-zip archive data, version 0.4
+    00000000: 37 7a bc af 27 1c 00 04  f1 de 5a c6 a9 00 00 00  |7z..'.....Z.....|
+    00000010: 00 00 00 00 22 00 00 00  00 00 00 00 ea b3 f6 d8  |...."...........|
+    00000020: 75 e4 e7 9f 89 1a 6f 09  38 ba a3 24 b6 f0 5c 6f  |u.....o.8..$..\o|
+    00000030: 2c 63 e9 b1 d0 ff 2e b4  7e b6 a6 28 58 79 a0 b8  |,c......~..(Xy..|
+    00000040: 00 00 81 33 07 ae 0f d0  0e b0 3c 9f 39 10 9c 9f  |...3......<.9...|
+    00000050: a6 d5 33 da b2 2e b0 df  ab 24 07 ac f4 3e d0 00  |..3......$...>..|
+    00000060: eb cf 3e 86 10 26 bd c9  5e e9 f2 ec 8e 5f 05 51  |..>..&..^...._.Q|
+    00000070: 67 59 ef f0 64 a4 bc 55  0b 17 07 0b dc 31 c4 8b  |gY..d..U.....1..|
+    00000080: f2 96 a1 15 75 74 f7 03  a6 7e dc 69 41 96 58 2e  |....ut...~.iA.X.|
+    00000090: c9 70 c1 14 82 10 2f cc  e7 db 13 be 44 fa 10 a7  |.p..../.....D...|
+    000000a0: fc 3f 2e 47 6e 43 c6 6d  de 0d 22 65 54 a6 bf f7  |.?.GnC.m.."eT...|
+    000000b0: 71 4d e5 d2 c9 5d aa a4  be c5 45 de 3a 41 26 a2  |qM...]....E.:A&.|
+    000000c0: 49 90 ca a2 05 fc f8 00  00 17 06 20 01 09 80 89  |I.......... ....|
+    000000d0: 00 07 0b 01 00 01 23 03  01 01 05 5d 00 10 00 00  |......#....]....|
+    000000e0: 0c 80 b6 0a 01 aa 29 61  c4 00 00                 |......)a...     |
+imagedata           .. text: "MkMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM"
+b2,r,msb,xy         .. text: "QTTQUUUUUUUUUUU"
+b2,g,lsb,xy         .. file: VISX image file
+b2,b,msb,xy         .. file: VISX image file
+b4,r,msb,xy         .. text: "wwwwwwwwwwwwwwwwwwwwwww3"
+b4,g,lsb,xy         .. file: VISX image file
+b4,g,msb,xy         .. text: "3S3U53SS"
+b4,b,msb,xy         .. text: "wwwwwwwwwwwwwwwwwwwwSswwwwwwwwww7wwwwwwwwwwwwwwwwwwwwwwww3w3U"</span></code></pre>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/chall_img3.png" alt="zsteg Analysis Results" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <div class="success-box">
+          <strong>Discovery:</strong><br>
+          Based on the zsteg results, the PNG file is <strong>not only an image</strong>. There is hidden 
+          appended data, and this data appears to be a <strong>7z archive</strong>.
+        </div>
+
+        <h2 id="extraction">3. Extracting Hidden Archive</h2>
+        <p>
+          I extracted the hidden data using the <strong>offset value <code>0xef18</code></strong> identified 
+          by zsteg:
+        </p>
+
+        <pre data-language="bash"><code><span class="prompt">└──╼ $</span> <span class="function">dd</span> <span class="variable">if</span><span class="operator">=</span><span class="variable">wallpaper</span>.<span class="variable">png</span> <span class="variable">of</span><span class="operator">=</span><span class="variable">secret</span>.<span class="variable">7z</span> <span class="variable">bs</span><span class="operator">=</span><span class="number">1</span> <span class="variable">skip</span><span class="operator">=</span><span class="variable">$((</span><span class="number">0xef18</span><span class="variable">))</span>
+<span class="output">235+0 records in
+235+0 records out
+235 bytes copied, 0.00520128 s, 45.2 kB/s</span></code></pre>
+
+        <div class="info-box">
+          <strong>Command Breakdown:</strong>
+          <ul style="margin: 8px 0 0 20px;">
+            <li><code>dd</code> — Data duplication tool</li>
+            <li><code>if=wallpaper.png</code> — Input file</li>
+            <li><code>of=secret.7z</code> — Output file</li>
+            <li><code>bs=1</code> — Block size of 1 byte</li>
+            <li><code>skip=$((0xef18))</code> — Skip to offset 0xef18 (61208 in decimal)</li>
+          </ul>
+        </div>
+
+        <p>This created a new file called <code>secret.7z</code>.</p>
+
+        <h2 id="password">4. Password Discovery</h2>
+        <p>
+          The <code>secret.7z</code> file was <strong>password protected</strong>. After reviewing the image 
+          again, I found hidden text:
+        </p>
+
+        <div class="highlight-box">
+          <strong>Password Found:</strong> <code>1n73rc3p7_c0nf1rm3d</code>
+        </div>
+
+        <p>This turned out to be the password for the 7z archive.</p>
+
+        <h2 id="flag">5. Extracting the Flag</h2>
+
+        <pre data-language="bash"><code><span class="prompt">┌─[ANRx07@parrot]─[~/Desktop/CTFs_2026/0xfun_ctf/forensics/2]</span>
+<span class="prompt">└──╼ $</span> <span class="function">7z</span> <span class="variable">x</span> <span class="variable">secret</span>.<span class="variable">7z</span> 
+
+<span class="output">7-Zip [64] 16.02 : Copyright (c) 1999-2016 Igor Pavlov : 2016-05-21
+p7zip Version 16.02 (locale=C.UTF-8,Utf16=on,HugeFiles=on,64 bits,8 CPUs Intel(R) Core(TM) i5-8365U CPU @ 1.60GHz (806EC),ASM,AES-NI)
+
+Scanning the drive for archives:
+1 file, 235 bytes (1 KiB)
+
+Extracting archive: secret.7z
+--
+Path = secret.7z
+Type = 7z
+Physical Size = 235
+Headers Size = 203
+Method = LZMA2:12 7zAES
+Solid = -
+Blocks = 1
+
+Enter password (will not be echoed): ********
+
+Everything is Ok                  
+Folders: 1
+Files: 1
+Size:       27
+Compressed: 235</span>
+
+<span class="prompt">┌─[ANRx07@parrot]─[~/Desktop/CTFs_2026/0xfun_ctf/forensics/2]</span>
+<span class="prompt">└──╼ $</span> <span class="function">ls</span>
+<span class="output">fishwithwater  hash.txt  scr  secret.7z  wallpaper.png</span>
+
+<span class="prompt">┌─[ANRx07@parrot]─[~/Desktop/CTFs_2026/0xfun_ctf/forensics/2]</span>
+<span class="prompt">└──╼ $</span> <span class="function">ls</span> <span class="variable">fishwithwater/</span>
+<span class="output">nothing.txt</span>
+
+<span class="prompt">┌─[ANRx07@parrot]─[~/Desktop/CTFs_2026/0xfun_ctf/forensics/2]</span>
+<span class="prompt">└──╼ $</span> <span class="function">cat</span> <span class="variable">fishwithwater/nothing.txt</span>
+<span class="output">0xfun{l4y3r_pr0t3c710n_k3y}</span></code></pre>
+
+        <div class="success-box" style="border-left-color: #00c853;">
+          <strong>Flag Retrieved!</strong><br>
+          <code>0xfun{l4y3r_pr0t3c710n_k3y}</code>
+        </div>
+
+        <h2 id="summary">Challenge Summary</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Phase</th>
+                <th>Tool/Technique</th>
+                <th>Finding</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Initial Analysis</strong></td>
+                <td><code>exiftool</code>, <code>file</code>, <code>xxd</code></td>
+                <td>Trailer data after IEND chunk detected</td>
+              </tr>
+              <tr>
+                <td><strong>Steganography</strong></td>
+                <td><code>zsteg</code></td>
+                <td>7z archive hidden at offset <code>0xef18</code></td>
+              </tr>
+              <tr>
+                <td><strong>Extraction</strong></td>
+                <td><code>dd</code></td>
+                <td>Extracted <code>secret.7z</code> (235 bytes)</td>
+              </tr>
+              <tr>
+                <td><strong>Password Discovery</strong></td>
+                <td>Visual Inspection</td>
+                <td><code>1n73rc3p7_c0nf1rm3d</code></td>
+              </tr>
+              <tr>
+                <td><strong>Flag Extraction</strong></td>
+                <td><code>7z</code>, <code>cat</code></td>
+                <td><code>0xfun{l4y3r_pr0t3c710n_k3y}</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Tools Used</h3>
+        <ul>
+          <li><strong>exiftool</strong> — Metadata analysis and IEND chunk detection</li>
+          <li><strong>file</strong> — File type identification</li>
+          <li><strong>xxd</strong> — Hex dump analysis</li>
+          <li><strong>binwalk</strong> — Embedded file detection</li>
+          <li><strong>zsteg</strong> — PNG steganography analysis</li>
+          <li><strong>dd</strong> — Data extraction and carving</li>
+          <li><strong>7z</strong> — Archive extraction</li>
+        </ul>
+
+        <h3>Key Takeaways</h3>
+        <div class="info-box">
+          <ul style="margin: 0 0 0 20px;">
+            <li><strong>PNG IEND Chunk:</strong> The IEND chunk marks the end of image data. Any data after it is suspicious</li>
+            <li><strong>zsteg:</strong> A powerful tool for detecting hidden data in PNG images</li>
+            <li><strong>dd with offset:</strong> Can extract specific byte ranges from files</li>
+            <li><strong>7z Archives:</strong> Can be password protected; passwords may be hidden in plain sight</li>
+            <li><strong>Layered Security:</strong> The challenge demonstrated multiple layers of protection (hidden data + password)</li>
+          </ul>
+        </div>
+
+        <div class="info-box">
+          <strong>Disclaimer:</strong> <br>All activities in this writeup were conducted within a fully authorized, isolated laboratory environment. <br>These techniques are presented solely for educational and defensive security purposes.
+        </div>
+      </div>
+      <footer class="writeup-footer">
+        <a href="../../../#writeups" class="back-link">
+          <i class="fas fa-arrow-left"></i> Back to Writeups
+        </a>
+        <div class="share-links">
+          <a href="#" aria-label="Share on LinkedIn" title="Share on LinkedIn">
+            <i class="fab fa-linkedin-in"></i>
+          </a>
+          <a href="https://github.com/anxs3c" target="_blank" aria-label="View on GitHub" title="View on GitHub">
+            <i class="fab fa-github"></i>
+          </a>
+        </div>
+      </footer>
+    </div>
+  </main>
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a href="../../../" class="footer-logo">ANXS<span>3C</span></a>
+          <p>Red Team Operator · Offensive Security</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 ANXS3C · All rights reserved</span>
+      </div>
+    </div>
+  </footer>
+  <button class="back-to-top" id="backToTop">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+  <script src="../../../js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const progressBar = document.getElementById('writeupProgress');
+      window.addEventListener('scroll', function() {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = (scrollTop / docHeight) * 100;
+        progressBar.style.width = progress + '%';
+      });
+    });
+  </script>
+</body>
+</html>
