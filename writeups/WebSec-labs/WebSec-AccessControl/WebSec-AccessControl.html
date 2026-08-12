@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Access Control Vulnerabilities - Complete walkthrough of 13 privilege escalation labs covering IDOR, horizontal/vertical privilege escalation, insecure direct object references, and access control bypass techniques" />
+  <meta name="keywords" content="Access Control, Privilege Escalation, IDOR, BOLA, Horizontal Escalation, Vertical Escalation, Web Security, Authorization" />
+  <meta name="author" content="ANXS3C" />
+  <title>Access Control Vulnerabilities - ANXS3C</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="../../../css/style.css" />
+  <link rel="stylesheet" href="../../../css/writeup.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg><text y='.9em' font-size='90'>🛡️ </text></svg>">
+</head>
+<body class="writeup-page">
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+  <div class="writeup-progress">
+    <div class="progress-bar" id="writeupProgress"></div>
+  </div>
+  <nav class="navbar" id="navbar">
+    <div class="container">
+      <a href="../../../" class="logo"><span>🛡️ </span>ANXS<span>3C</span></a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="https://anxs3c.github.io/#writeups">Writeups</a></li>
+      </ul>
+      <div class="nav-controls">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <i class="fas fa-moon"></i>
+        </button>
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+  <div class="cyber-lines">
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line-vertical"></div>
+    <div class="line-vertical"></div>
+    <div class="line-vertical"></div>
+  </div>
+  <main id="main">
+    <div class="writeup-container">
+      <header class="writeup-header">
+        <div class="badge">Web Security Labs</div>
+        <h1>Access Control <span class="highlight">Vulnerabilities</span></h1>
+        <p class="subtitle">
+          A comprehensive walkthrough of 13 privilege escalation labs covering IDOR, 
+          horizontal/vertical privilege escalation, insecure direct object references, 
+          and access control bypass techniques
+        </p>
+        <div class="writeup-meta">
+          <span class="meta-tag"><i class="fas fa-tag"></i> Web Security</span>
+          <span class="meta-tag"><i class="fas fa-signal"></i> Intermediate</span>
+          <span class="meta-tag"><i class="fas fa-calendar"></i> August 2026</span>
+          <span class="meta-tag"><i class="fas fa-user-shield"></i> Authorization</span>
+          <span class="meta-tag"><i class="fas fa-arrow-up"></i> Privilege Escalation</span>
+          <span class="meta-tag"><i class="fab fa-github"></i> <a href="https://github.com/anxs3c" target="_blank">GitHub</a></span>
+        </div>
+      </header>
+      <nav class="toc" aria-label="Table of Contents">
+        <div class="toc-header">
+          <i class="fas fa-list"></i>
+          <h3>Contents</h3>
+        </div>
+        <ul class="toc-grid">
+          <li><a href="#lab1">Lab 1: Unprotected Admin</a></li>
+          <li><a href="#lab2">Lab 2: Unpredictable URL</a></li>
+          <li><a href="#lab3">Lab 3: Cookie Manipulation</a></li>
+          <li><a href="#lab4">Lab 4: Role Modification</a></li>
+          <li><a href="#lab5">Lab 5: IDOR by Request Parameter</a></li>
+          <li><a href="#lab6">Lab 6: IDOR with GUIDs</a></li>
+          <li><a href="#lab7">Lab 7: Data Leakage in Redirect</a></li>
+          <li><a href="#lab8">Lab 8: Password Disclosure</a></li>
+          <li><a href="#lab9">Lab 9: Insecure Direct Object References</a></li>
+          <li><a href="#lab10">Lab 10: X-Original-URL Bypass</a></li>
+          <li><a href="#lab11">Lab 11: Method-Based Bypass</a></li>
+          <li><a href="#lab12">Lab 12: Multi-Step Flaw</a></li>
+          <li><a href="#lab13">Lab 13: Referer-Based Control</a></li>
+          <li><a href="#mitigations">Mitigations &amp; Insights</a></li>
+        </ul>
+      </nav>
+      <div class="writeup-body">
+        <div class="info-box">
+          <strong>Overview:</strong> Access control vulnerabilities (also known as authorization flaws) occur 
+          when an application fails to properly enforce restrictions on what authenticated users are allowed 
+          to do. These labs demonstrate various privilege escalation techniques including:
+          <ul style="margin: 8px 0 0 20px;">
+            <li><strong>Horizontal Privilege Escalation</strong> — Accessing another user's data</li>
+            <li><strong>Vertical Privilege Escalation</strong> — Gaining administrative privileges</li>
+            <li><strong>IDOR (Insecure Direct Object References)</strong> — Accessing unauthorized resources</li>
+            <li><strong>Access Control Bypass</strong> — Circumventing authorization checks</li>
+          </ul>
+        </div>
+
+        <h2 id="lab1">Lab 1: Unprotected Admin Functionality</h2>
+        
+        <div class="info-box">
+          <strong>Lab Description:</strong><br>
+          This lab has an unprotected admin panel.<br>
+          <strong>Goal:</strong> Delete the user <code>carlos</code>.
+        </div>
+
+        <p><strong>How was the lab compromised?</strong></p>
+        <p>The first move that I did was discover the <code>robots.txt</code> file:</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab1img2.png" alt="Lab 1 - robots.txt" style="max-width: 85%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <p>
+          I noticed that <code>robots.txt</code> contains the disallowed path <code>/administrator-panel</code>. 
+          By navigating to this path, it provided me direct access to the admin interface without authentication, 
+          where I deleted the target user and solved the lab.
+        </p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;">
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab1img3.png" alt="Lab 1 - Admin Panel" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab1img4.png" alt="Lab 1 - Delete Success" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+        </div>
+
+        <div class="success-box" style="border-left-color: #00c853;">
+          <strong>Lab 1 Solved!</strong> Unprotected admin panel discovered via <code>robots.txt</code>.
+        </div>
+
+        <h2 id="lab2">Lab 2: Unprotected Admin Functionality with Unpredictable URL</h2>
+
+        <div class="info-box">
+          <strong>Lab Description:</strong><br>
+          This lab has an unprotected admin panel at an unpredictable location.<br>
+          <strong>Goal:</strong> Delete the user <code>carlos</code>.
+        </div>
+
+        <p><strong>How was the lab compromised?</strong></p>
+        <p>
+          I first checked the <code>/robots.txt</code> file, but it returned a <code>404 Not Found</code> 
+          response. I then analyzed the page source and discovered a client-side JavaScript snippet:
+        </p>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab2img1.png" alt="Lab 2 - JavaScript Source" style="max-width: 85%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <pre data-language="javascript"><code><span class="keyword">&lt;script&gt;</span>
+  <span class="keyword">var</span> <span class="variable">isAdmin</span> <span class="operator">=</span> <span class="boolean">false</span>;
+  <span class="keyword">if</span> (<span class="variable">isAdmin</span>) <span class="operator">{</span>
+     <span class="keyword">var</span> <span class="variable">topLinksTag</span> <span class="operator">=</span> <span class="variable">document</span>.<span class="function">getElementsByClassName</span>(<span class="string">"top-links"</span>)[<span class="number">0</span>];
+     <span class="keyword">var</span> <span class="variable">adminPanelTag</span> <span class="operator">=</span> <span class="variable">document</span>.<span class="function">createElement</span>(<span class="string">'a'</span>);
+     <span class="variable">adminPanelTag</span>.<span class="function">setAttribute</span>(<span class="string">'href'</span>, <span class="string">'/admin-76g9xu'</span>);
+     <span class="variable">adminPanelTag</span>.<span class="variable">innerText</span> <span class="operator">=</span> <span class="string">'Admin panel'</span>;
+     <span class="variable">topLinksTag</span>.<span class="function">append</span>(<span class="variable">adminPanelTag</span>);
+  <span class="operator">}</span>
+<span class="keyword">&lt;/script&gt;</span></code></pre>
+
+        <p>
+          The script revealed the admin panel URL: <code>/admin-76g9xu</code>. Even though the 
+          <code>isAdmin</code> variable was set to false, the link to the admin panel was hardcoded, 
+          allowing me to directly access the endpoint.
+        </p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;">
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab2img2.png" alt="Lab 2 - Admin Panel" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab2img3.png" alt="Lab 2 - Delete Success" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+        </div>
+
+        <div class="success-box" style="border-left-color: #00c853;">
+          <strong>Lab 2 Solved!</strong> Admin URL discovered in client-side JavaScript.
+        </div>
+
+        <h2 id="lab3">Lab 3: User Role Controlled by Request Parameter</h2>
+
+        <div class="info-box">
+          <strong>Lab Description:</strong><br>
+          This lab uses a forgeable cookie to identify administrators.<br>
+          <strong>Goal:</strong> Delete the user <code>carlos</code>.<br>
+          <strong>Credentials:</strong> <code>wiener:peter</code>
+        </div>
+
+        <p><strong>How was the lab compromised?</strong></p>
+        <p>
+          I logged into my account and intercepted the login request. The server's response set a cookie 
+          named <code>Admin</code> with the value <code>false</code>.
+        </p>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab3img1.png" alt="Lab 3 - Cookie" style="max-width: 85%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <p>
+          I set the <code>Admin</code> cookie to <code>true</code>, allowing me to access the admin panel 
+          and delete the target user.
+        </p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;">
+          <div style="flex: 1; min-width: 150px;">
+            <img src="./imgs/lab3img2.png" alt="Lab 3 - Step 1" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 150px;">
+            <img src="./imgs/lab3img3.png" alt="Lab 3 - Step 2" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 150px;">
+            <img src="./imgs/lab3img4.png" alt="Lab 3 - Step 3" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 150px;">
+            <img src="./imgs/lab3img5.png" alt="Lab 3 - Step 4" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+        </div>
+
+        <div class="success-box" style="border-left-color: #00c853;">
+          <strong>Lab 3 Solved!</strong> Cookie manipulation to gain admin privileges.
+        </div>
+
+        <h2 id="lab4">Lab 4: User Role Can Be Modified in User Profile</h2>
+
+        <div class="info-box">
+          <strong>Lab Description:</strong><br>
+          Admin panel accessible only to users with a <code>roleid</code> of 2.<br>
+          <strong>Goal:</strong> Delete the user <code>carlos</code>.<br>
+          <strong>Credentials:</strong> <code>wiener:peter</code>
+        </div>
+
+        <p><strong>How was the lab compromised?</strong></p>
+        <p>
+          The vulnerability occurs in the email update functionality. When updating the email, I intercepted 
+          the request.
+        </p>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab4img1.png" alt="Lab 4 - Email Update" style="max-width: 85%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <p>
+          I observed that the response contains <code>roleid</code>. I added <code>roleid=2</code> to 
+          the request:
+        </p>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab4img2.png" alt="Lab 4 - Role Modification" style="max-width: 85%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <p>
+          The server accepted the request and returned <code>roleid=2</code>. I then accessed the admin panel 
+          and deleted the target user.
+        </p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;">
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab4img3.png" alt="Lab 4 - Admin Access" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab4img4.png" alt="Lab 4 - Delete Success" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+        </div>
+
+        <div class="success-box" style="border-left-color: #00c853;">
+          <strong>Lab 4 Solved!</strong> Role modification in user profile.
+        </div>
+
+        <h2 id="lab5">Lab 5: User ID Controlled by Request Parameter</h2>
+
+        <div class="info-box">
+          <strong>Lab Description:</strong><br>
+          Horizontal privilege escalation on the user account page.<br>
+          <strong>Goal:</strong> Obtain the API key for <code>carlos</code>.<br>
+          <strong>Credentials:</strong> <code>wiener:peter</code>
+        </div>
+
+        <p><strong>How was the lab compromised?</strong></p>
+        <p>
+          I intercepted the request to the account page and noticed the <code>id</code> parameter. I modified 
+          it to <code>carlos</code>, which allowed me to directly access the target user's account.
+        </p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;">
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab5img1.png" alt="Lab 5 - IDOR Request" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab5img2.png" alt="Lab 5 - API Key" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+        </div>
+
+        <div class="success-box" style="border-left-color: #00c853;">
+          <strong>Lab 5 Solved!</strong> IDOR via request parameter.
+        </div>
+
+        <h2 id="lab6">Lab 6: User ID Controlled by Request Parameter with Unpredictable User IDs</h2>
+
+        <div class="info-box">
+          <strong>Lab Description:</strong><br>
+          Horizontal privilege escalation using GUIDs.<br>
+          <strong>Goal:</strong> Find the GUID for <code>carlos</code> and submit his API key.<br>
+          <strong>Credentials:</strong> <code>wiener:peter</code>
+        </div>
+
+        <p><strong>How was the lab compromised?</strong></p>
+        <p>
+          I navigated through the application and found a post shared by the target user <code>carlos</code>.
+        </p>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab6img1.png" alt="Lab 6 - Carlos Post" style="max-width: 85%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <p>
+          I clicked on the user <code>carlos</code> link and obtained the GUID associated with the target user.
+        </p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;">
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab6img2.png" alt="Lab 6 - GUID" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab6img3.png" alt="Lab 6 - API Key" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab6img4.png" alt="Lab 6 - Success" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+        </div>
+
+        <div class="success-box" style="border-left-color: #00c853;">
+          <strong>Lab 6 Solved!</strong> IDOR with GUID discovery via posts.
+        </div>
+
+        <h2 id="lab7">Lab 7: User ID Controlled by Request Parameter with Data Leakage in Redirect</h2>
+
+        <div class="info-box">
+          <strong>Lab Description:</strong><br>
+          Sensitive information leaked in the body of a redirect response.<br>
+          <strong>Goal:</strong> Obtain the API key for <code>carlos</code>.<br>
+          <strong>Credentials:</strong> <code>wiener:peter</code>
+        </div>
+
+        <p><strong>How was the lab compromised?</strong></p>
+        <p>
+          I attempted to access the target user directly by modifying the <code>id</code> parameter to 
+          <code>carlos</code>. The application blocked access and redirected me to the login page.
+        </p>
+        <p>
+          Despite the redirect, I intercepted the request and found the response contained the API key of 
+          the target user.
+        </p>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab7img1.png" alt="Lab 7 - Data Leakage" style="max-width: 85%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <div class="success-box" style="border-left-color: #00c853;">
+          <strong>Lab 7 Solved!</strong> API key leaked in redirect response body.
+        </div>
+
+        <h2 id="lab8">Lab 8: User ID Controlled by Request Parameter with Password Disclosure</h2>
+
+        <div class="info-box">
+          <strong>Lab Description:</strong><br>
+          User account page contains the current user's existing password in a masked input.<br>
+          <strong>Goal:</strong> Retrieve the administrator's password and delete <code>carlos</code>.<br>
+          <strong>Credentials:</strong> <code>wiener:peter</code>
+        </div>
+
+        <p><strong>How was the lab compromised?</strong></p>
+        <p>
+          After logging in, I observed that the application displayed the user's password value in the 
+          user panel.
+        </p>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab8img1.png" alt="Lab 8 - Password Display" style="max-width: 85%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <p>
+          I modified the <code>id</code> parameter from my user value to <code>administrator</code>, which 
+          retrieved the administrator's password.
+        </p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;">
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab8img2.png" alt="Lab 8 - Admin Password" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab8img3.png" alt="Lab 8 - Password" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+        </div>
+
+        <p>I then logged in as the administrator using the retrieved password:</p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;">
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab8img4.png" alt="Lab 8 - Admin Login" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab8img5.png" alt="Lab 8 - Delete Success" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+        </div>
+
+        <div class="success-box" style="border-left-color: #00c853;">
+          <strong>Lab 8 Solved!</strong> Password disclosure via IDOR.
+        </div>
+
+        <h2 id="lab9">Lab 9: Insecure Direct Object References</h2>
+
+        <div class="info-box">
+          <strong>Lab Description:</strong><br>
+          User chat logs stored directly on the file system, retrieved using static URLs.<br>
+          <strong>Goal:</strong> Find the password for <code>carlos</code> and log into their account.
+        </div>
+
+        <p><strong>How was the lab compromised?</strong></p>
+        <p>
+          I tested the live chat functionality and clicked on "View Transcript". The application exported 
+          a file named <code>2.txt</code>.
+        </p>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab9img1.png" alt="Lab 9 - Live Chat" style="max-width: 85%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <p>
+          I intercepted the request and modified the <code>filename</code> parameter to <code>1.txt</code>, 
+          which gave me access to unauthorized chat logs containing the password.
+        </p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;">
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab9img2.png" alt="Lab 9 - Chat Logs" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab9img3.png" alt="Lab 9 - Login" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab9img4.png" alt="Lab 9 - Success" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+        </div>
+
+        <div class="warning-box">
+          <strong>Vulnerability Analysis:</strong><br>
+          The application stores chat logs directly on the server as text files and makes them accessible 
+          via static URLs (<code>1.txt</code>, <code>2.txt</code>, etc.). The application does not verify 
+          whether a user is authorized to access these files, allowing an attacker to modify the filename 
+          and access other users' chat logs.
+        </div>
+
+        <div class="success-box" style="border-left-color: #00c853;">
+          <strong>Lab 9 Solved!</strong> IDOR on chat log files.
+        </div>
+
+        <h2 id="lab10">Lab 10: URL-Based Access Control Can Be Circumvented</h2>
+
+        <div class="info-box">
+          <strong>Lab Description:</strong><br>
+          Front-end system blocks external access to <code>/admin</code>, but the back-end supports 
+          the <code>X-Original-URL</code> header.<br>
+          <strong>Goal:</strong> Delete the user <code>carlos</code>.
+        </div>
+
+        <p><strong>How was the lab compromised?</strong></p>
+        <p>
+          I opened the page and observed a navigation bar that included an admin panel option:
+        </p>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab10img1.png" alt="Lab 10 - Admin Option" style="max-width: 85%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <p>Clicking on "Admin panel" resulted in an access denied response:</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab10img2.png" alt="Lab 10 - Access Denied" style="max-width: 85%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <p>
+          I intercepted the request and tested the <code>X-Original-URL</code> header by setting it to 
+          <code>/invalid</code>, which returned a <code>404 Not Found</code> response, confirming that 
+          the back-end processes the header.
+        </p>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab10img3.png" alt="Lab 10 - X-Original-URL Test" style="max-width: 85%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <p>
+          I set <code>X-Original-URL</code> to <code>/admin</code> and gained access to the admin panel:
+        </p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;">
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab10img4.png" alt="Lab 10 - Admin Panel" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab10img5.png" alt="Lab 10 - Admin Response" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab10img6.png" alt="Lab 10 - Admin Page" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+        </div>
+
+        <p>
+          I found the delete endpoint: <code>/admin/delete?username=carlos</code>. I set 
+          <code>X-Original-URL</code> to <code>/admin/delete</code> and added <code>username=carlos</code> 
+          as a query parameter:
+        </p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;">
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab10img7.png" alt="Lab 10 - Delete Attempt" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab10img8.png" alt="Lab 10 - Delete Success" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab10img9.png" alt="Lab 10 - Confirmation" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab10img10.png" alt="Lab 10 - Final" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+        </div>
+
+        <div class="info-box">
+          <strong>Attack Flow:</strong><br>
+          <code>Browser</code> → <code>GET / + X-Original-URL:/admin</code> → <code>Front-end</code> 
+          allows "/" → <code>Back-end</code> executes "/admin" → <code>Response</code> → Admin panel → Delete target user
+        </div>
+
+        <div class="success-box" style="border-left-color: #00c853;">
+          <strong>Lab 10 Solved!</strong> X-Original-URL header bypass.
+        </div>
+
+        <h2 id="lab11">Lab 11: Method-Based Access Control Can Be Circumvented</h2>
+
+        <div class="info-box">
+          <strong>Lab Description:</strong><br>
+          Access controls based partly on the HTTP method of requests.<br>
+          <strong>Goal:</strong> Promote <code>wiener</code> to administrator.<br>
+          <strong>Credentials:</strong> <code>administrator:admin</code> and <code>wiener:peter</code>
+        </div>
+
+        <p><strong>How was the lab compromised?</strong></p>
+        <p>
+          I first logged in as the administrator to understand how the privilege upgrade request works.
+        </p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;">
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab11img1.png" alt="Lab 11 - Admin Panel" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab11img2.png" alt="Lab 11 - Upgrade Option" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+        </div>
+
+        <p>I intercepted the upgrade request:</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab11img3.png" alt="Lab 11 - Upgrade Request" style="max-width: 85%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <p>
+          I logged out and logged in as <code>wiener</code>. Attempting to send the same <code>POST</code> 
+          request returned <code>Unauthorized</code>.
+        </p>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab11img4.png" alt="Lab 11 - Unauthorized" style="max-width: 85%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <p>
+          I changed the HTTP method from <code>POST</code> to <code>GET</code> and sent the request:
+        </p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;">
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab11img5.png" alt="Lab 11 - GET Request" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab11img6.png" alt="Lab 11 - Success" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab11img7.png" alt="Lab 11 - Admin Panel" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+        </div>
+
+        <div class="success-box" style="border-left-color: #00c853;">
+          <strong>Lab 11 Solved!</strong> Method-based access control bypass.
+        </div>
+
+        <h2 id="lab12">Lab 12: Multi-Step Process with No Access Control on One Step</h2>
+
+        <div class="info-box">
+          <strong>Lab Description:</strong><br>
+          Multi-step process for changing a user's role with flawed access control.<br>
+          <strong>Goal:</strong> Promote <code>wiener</code> to administrator.<br>
+          <strong>Credentials:</strong> <code>administrator:admin</code> and <code>wiener:peter</code>
+        </div>
+
+        <p><strong>How was the lab compromised?</strong></p>
+        <p>
+          I logged in as the administrator and observed that the privilege escalation is performed in two steps:
+        </p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;">
+          <div style="flex: 1; min-width: 150px;">
+            <img src="./imgs/lab12img1.png" alt="Lab 12 - Step 1" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 150px;">
+            <img src="./imgs/lab12img2.png" alt="Lab 12 - Step 2" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 150px;">
+            <img src="./imgs/lab12img3.png" alt="Lab 12 - Step 3" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 150px;">
+            <img src="./imgs/lab12img4.png" alt="Lab 12 - Step 4" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+        </div>
+
+        <p>
+          I logged out, logged in as <code>wiener</code>, and sent the confirmation request with my session 
+          cookie, modifying the <code>username</code> parameter to <code>wiener</code>.
+        </p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;">
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab12img5.png" alt="Lab 12 - Confirmation Request" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab12img6.png" alt="Lab 12 - Success" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+        </div>
+
+        <div class="success-box" style="border-left-color: #00c853;">
+          <strong>Lab 12 Solved!</strong> Multi-step access control flaw.
+        </div>
+
+        <h2 id="lab13">Lab 13: Referer-Based Access Control</h2>
+
+        <div class="info-box">
+          <strong>Lab Description:</strong><br>
+          Access control based on the <code>Referer</code> header.<br>
+          <strong>Goal:</strong> Promote <code>wiener</code> to administrator.<br>
+          <strong>Credentials:</strong> <code>administrator:admin</code> and <code>wiener:peter</code>
+        </div>
+
+        <p><strong>How was the lab compromised?</strong></p>
+        <p>
+          I logged in as the administrator and intercepted the upgrade request, which included a 
+          <code>Referer</code> header pointing to <code>/admin</code>.
+        </p>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab13img1.png" alt="Lab 13 - Referer Header" style="max-width: 85%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <p>
+          I logged out, logged in as <code>wiener</code>, and sent the request with a forged 
+          <code>Referer</code> header.
+        </p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;">
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab13img2.png" alt="Lab 13 - Forged Referer" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab13img3.png" alt="Lab 13 - Success" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+        </div>
+
+        <div class="success-box" style="border-left-color: #00c853;">
+          <strong>Lab 13 Solved!</strong> Referer header bypass.
+        </div>
+
+        <h2 id="mitigations">Insights &amp; Security Mitigations</h2>
+
+        <div class="warning-box">
+          <strong>Never rely on client-side checks for authorization</strong>
+        </div>
+
+        <div class="info-box">
+          <strong>Best Practices:</strong>
+          <ul style="margin: 8px 0 0 20px;">
+            <li>Always enforce role validation on the server side</li>
+            <li>Do not trust user-controlled parameters: <code>id</code>, <code>role</code>, <code>username</code>, etc.</li>
+            <li>Protect administrative endpoints with proper authentication and authorization controls</li>
+            <li>Avoid exposing sensitive data in redirects or HTTP responses</li>
+            <li>Validate HTTP methods and security-related headers appropriately</li>
+            <li>Implement object-level authorization checks to prevent IDOR/BOLA vulnerabilities</li>
+            <li>Enforce server-side access control checks for every request</li>
+            <li>Implement role-based access control (RBAC) correctly</li>
+            <li>Validate resource ownership before returning sensitive data</li>
+            <li>Avoid predictable identifiers; use random or non-sequential IDs where possible</li>
+            <li>Do not expose administrative endpoints in client-side code</li>
+            <li>Restrict direct access to sensitive URLs</li>
+            <li>Log and monitor privilege escalation attempts</li>
+          </ul>
+        </div>
+
+        <div class="success-box" style="border-left-color: #00c853;">
+          <strong>Conclusion:</strong><br>
+          These labs demonstrate how Broken Access Control vulnerabilities can arise from improper 
+          authorization checks, client-side trust, and insecure handling of user-controlled input. By 
+          manipulating parameters, modifying cookies, bypassing front-end restrictions, and exploiting 
+          flawed access control logic, it was possible to escalate privileges, access sensitive data, 
+          and perform administrative actions without proper authorization.
+        </div>
+
+        <div class="info-box">
+          <strong>Disclaimer:</strong> <br>All activities in this writeup were conducted within a fully authorized, isolated laboratory environment. <br>These techniques are presented solely for educational and defensive security purposes.
+        </div>
+      </div>
+      <footer class="writeup-footer">
+        <a href="../../../#writeups" class="back-link">
+          <i class="fas fa-arrow-left"></i> Back to Writeups
+        </a>
+        <div class="share-links">
+          <a href="#" aria-label="Share on LinkedIn" title="Share on LinkedIn">
+            <i class="fab fa-linkedin-in"></i>
+          </a>
+          <a href="https://github.com/anxs3c" target="_blank" aria-label="View on GitHub" title="View on GitHub">
+            <i class="fab fa-github"></i>
+          </a>
+        </div>
+      </footer>
+    </div>
+  </main>
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a href="../../../" class="footer-logo">ANXS<span>3C</span></a>
+          <p>Red Team Operator · Offensive Security</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 ANXS3C · All rights reserved</span>
+      </div>
+    </div>
+  </footer>
+  <button class="back-to-top" id="backToTop">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+  <script src="../../../js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const progressBar = document.getElementById('writeupProgress');
+      window.addEventListener('scroll', function() {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = (scrollTop / docHeight) * 100;
+        progressBar.style.width = progress + '%';
+      });
+    });
+  </script>
+</body>
+</html>

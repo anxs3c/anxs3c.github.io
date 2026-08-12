@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="File Upload Vulnerabilities - Complete walkthrough of 6 web application security labs covering RCE via web shell upload, Content-Type bypass, path traversal, extension blacklist bypass, null byte injection, and polyglot attacks" />
+  <meta name="keywords" content="File Upload, Web Shell, RCE, PHP, Security, Path Traversal, Null Byte, Polyglot, .htaccess, Cybersecurity" />
+  <meta name="author" content="ANXS3C" />
+  <title>File Upload Vulnerabilities - ANXS3C</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="../../../css/style.css" />
+  <link rel="stylesheet" href="../../../css/writeup.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg><text y='.9em' font-size='90'>🛡️ </text></svg>">
+</head>
+<body class="writeup-page">
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+  <div class="writeup-progress">
+    <div class="progress-bar" id="writeupProgress"></div>
+  </div>
+  <nav class="navbar" id="navbar">
+    <div class="container">
+      <a href="../../../" class="logo"><span>🛡️ </span>ANXS<span>3C</span></a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="https://anxs3c.github.io/#writeups">Writeups</a></li>
+      </ul>
+      <div class="nav-controls">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <i class="fas fa-moon"></i>
+        </button>
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+  <div class="cyber-lines">
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line-vertical"></div>
+    <div class="line-vertical"></div>
+    <div class="line-vertical"></div>
+  </div>
+  <main id="main">
+    <div class="writeup-container">
+      <header class="writeup-header">
+        <div class="badge">Web Security Labs</div>
+        <h1>File Upload <span class="highlight">Vulnerabilities</span></h1>
+        <p class="subtitle">
+          A comprehensive walkthrough of 6 web application security labs covering RCE via web shell upload, 
+          Content-Type bypass, path traversal, extension blacklist bypass, null byte injection, and polyglot attacks
+        </p>
+        <div class="writeup-meta">
+          <span class="meta-tag"><i class="fas fa-tag"></i> Web Security</span>
+          <span class="meta-tag"><i class="fas fa-signal"></i> Intermediate</span>
+          <span class="meta-tag"><i class="fas fa-calendar"></i> August 2026</span>
+          <span class="meta-tag"><i class="fas fa-code"></i> PHP</span>
+          <span class="meta-tag"><i class="fas fa-shield-halved"></i> RCE</span>
+          <span class="meta-tag"><i class="fab fa-github"></i> <a href="https://github.com/anxs3c" target="_blank">GitHub</a></span>
+        </div>
+      </header>
+      <nav class="toc" aria-label="Table of Contents">
+        <div class="toc-header">
+          <i class="fas fa-list"></i>
+          <h3>Contents</h3>
+        </div>
+        <ul class="toc-grid">
+          <li><a href="#overview">Overview</a></li>
+          <li><a href="#lab1">Lab 1: Basic Web Shell Upload</a></li>
+          <li><a href="#lab2">Lab 2: Content-Type Bypass</a></li>
+          <li><a href="#lab3">Lab 3: Path Traversal</a></li>
+          <li><a href="#lab4">Lab 4: Extension Blacklist Bypass</a></li>
+          <li><a href="#lab5">Lab 5: Null Byte Injection</a></li>
+          <li><a href="#lab6">Lab 6: Polyglot Attack</a></li>
+          <li><a href="#techniques">Attack Techniques</a></li>
+          <li><a href="#mitigations">Security Mitigations</a></li>
+        </ul>
+      </nav>
+      <div class="writeup-body">
+        <h2 id="overview">Overview</h2>
+        <p>
+          A <strong>file upload vulnerability</strong> occurs when a web server allows users to upload files 
+          to its filesystem without sufficiently validating aspects such as the file's name, type, content, 
+          or size. When these restrictions are not properly enforced, attackers can upload malicious files, 
+          such as server-side scripts (e.g., PHP, JSP) or web shells, which can lead to complete server compromise.
+        </p>
+
+        <div class="warning-box">
+          <strong>Impact:</strong> File upload vulnerabilities can lead to:
+          <ul style="margin: 8px 0 0 20px;">
+            <li>Remote Code Execution (RCE)</li>
+            <li>Complete server compromise</li>
+            <li>Data theft and exfiltration</li>
+            <li>Backdoor deployment</li>
+            <li>Lateral movement within the network</li>
+          </ul>
+        </div>
+
+        <h2 id="lab1">Lab 1: Remote Code Execution via Web Shell Upload</h2>
+        
+        <div class="info-box">
+          <strong>Lab Description:</strong><br>
+          This lab contains a vulnerable image upload function. It doesn't perform any validation on the 
+          files users upload before storing them on the server's filesystem.<br><br>
+          <strong>Goal:</strong> Upload a basic PHP web shell and use it to exfiltrate the contents of 
+          <code>/home/carlos/secret</code>.<br>
+          <strong>Credentials:</strong> <code>wiener:peter</code>
+        </div>
+
+        <p>My goal was to read the content of <code>/home/carlos/secret</code>. Using the provided credentials, I logged into the account.</p>
+
+        <p>First, I uploaded a normal image to understand how the upload functionality works and how the server handles uploaded files:</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab1img1.png" alt="Lab 1 - Normal Image Upload" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <p>At this point, I proceeded to exploit the vulnerability by creating a malicious PHP web shell:</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab1img2.png" alt="Lab 1 - Malicious PHP Web Shell" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <pre data-language="php"><code><span class="keyword">&lt;?php</span> <span class="function">echo</span> <span class="function">file_get_contents</span>(<span class="string">'/home/carlos/secret'</span>); <span class="keyword">?&gt;</span></code></pre>
+
+        <p>I uploaded it as my avatar by replacing the original image in the request. Since the server did not validate the file type, the upload was accepted successfully.</p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;">
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab1img3.png" alt="Lab 1 - Upload 1" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab1img4.png" alt="Lab 1 - Upload 2" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab1img5.png" alt="Lab 1 - Upload 3" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+        </div>
+
+        <p>I then accessed the uploaded file, retrieved the secret, and solved the lab.</p>
+
+        <h4>Understanding the Vulnerability</h4>
+        <p>After uploading a normal image successfully, I attempted to upload a PHP web shell file. The upload was accepted without any restrictions, confirming that the application is vulnerable to a file upload vulnerability.</p>
+
+        <p>To better understand this behavior, let's assume the back-end PHP code of the upload image functionality looks like this:</p>
+
+        <pre data-language="php"><code><span class="keyword">&lt;?php</span>
+<span class="variable">$target_dir</span> <span class="operator">=</span> <span class="string">"files/avatars/"</span>;
+<span class="variable">$target_file</span> <span class="operator">=</span> <span class="variable">$target_dir</span> <span class="operator">.</span> <span class="variable">$_FILES</span>[<span class="string">"avatar"</span>][<span class="string">"name"</span>];
+
+<span class="keyword">if</span> (<span class="function">move_uploaded_file</span>(<span class="variable">$_FILES</span>[<span class="string">"avatar"</span>][<span class="string">"tmp_name"</span>], <span class="variable">$target_file</span>)) 
+    <span class="function">echo</span> <span class="string">"file uploaded successfully"</span>;
+<span class="keyword">else</span>
+    <span class="function">echo</span> <span class="string">"upload failed"</span>;
+<span class="keyword">?&gt;</span></code></pre>
+
+        <div class="warning-box">
+          <strong>Vulnerability Analysis:</strong><br>
+          The PHP code directly saves the uploaded file without performing any security checks. It does not:
+          <ul style="margin: 8px 0 0 20px;">
+            <li>Validate the file extension</li>
+            <li>Verify the file type (MIME type)</li>
+            <li>Restrict executable files</li>
+          </ul>
+          As a result, I was able to perform <strong>Remote Code Execution (RCE)</strong> by uploading a PHP file and executing it on the server.
+        </div>
+
+        <div class="success-box" style="border-left-color: #00c853;">
+          <strong>Lab 1 Solved!</strong> Basic web shell upload leading to RCE.
+        </div>
+
+        <h2 id="lab2">Lab 2: Web Shell Upload via Content-Type Restriction Bypass</h2>
+
+        <div class="info-box">
+          <strong>Lab Description:</strong><br>
+          This lab contains a vulnerable image upload function. It attempts to prevent users from uploading 
+          unexpected file types, but relies on checking user-controllable input to verify this.<br><br>
+          <strong>Goal:</strong> Upload a basic PHP web shell and exfiltrate <code>/home/carlos/secret</code>.<br>
+          <strong>Credentials:</strong> <code>wiener:peter</code>
+        </div>
+
+        <p>I intercepted the <strong>POST request</strong> and changed the <code>Content-Type</code> from <code>application/x-php</code> to <code>image/jpeg</code>. It worked successfully.</p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;">
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab2img1.png" alt="Lab 2 - Intercept 1" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab2img2.png" alt="Lab 2 - Intercept 2" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab2img3.png" alt="Lab 2 - Intercept 3" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+        </div>
+
+        <p>The malicious PHP file was stored on the server. I then went back to the account page to intercept the request to retrieve the uploaded file.</p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;">
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab2img4.png" alt="Lab 2 - Retrieve 1" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab2img5.png" alt="Lab 2 - Retrieve 2" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+        </div>
+
+        <div class="success-box" style="border-left-color: #00c853;">
+          <strong>Lab 2 Solved!</strong> Content-Type bypass successful.
+        </div>
+
+        <h2 id="lab3">Lab 3: Web Shell Upload via Path Traversal</h2>
+
+        <div class="info-box">
+          <strong>Lab Description:</strong><br>
+          This lab contains a vulnerable image upload function. The server is configured to prevent execution 
+          of user-supplied files, but this restriction can be bypassed by exploiting a secondary vulnerability 
+          (path traversal).<br><br>
+          <strong>Goal:</strong> Upload a PHP web shell and exfiltrate <code>/home/carlos/secret</code>.<br>
+          <strong>Credentials:</strong> <code>wiener:peter</code>
+        </div>
+
+        <p>In this lab, the application prevents execution of uploaded files, indicating that the server likely blocks execution in the upload directory.</p>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab3img1.png" alt="Lab 3 - Upload Attempt" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <p>The file is uploaded, but it did not retrieve the content due to execution restrictions on the server.</p>
+
+        <p>After intercepting the <strong>POST request</strong> of the upload function, I noticed that the file is uploaded with a <strong>filename parameter</strong>:</p>
+
+        <pre><code>Content-Disposition: form-data; name="avatar"; filename="image.jpg"</code></pre>
+
+        <p>This gave me an idea: if the application does not properly sanitize the filename, I may be able to perform a <a href="https://github.com/achnouri/WebSec-PathTraversal" target="_blank">path traversal attack</a>.</p>
+
+        <p>Instead of uploading the file normally, I modified the filename to traverse directories:</p>
+
+        <pre><code>filename="..%2fexploit_.php"</code></pre>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab3img2.png" alt="Lab 3 - Path Traversal" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <p>This moved the uploaded file outside the images directory, placing it in a directory where PHP execution is enabled.</p>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab3img3.png" alt="Lab 3 - Success" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <div class="success-box" style="border-left-color: #00c853;">
+          <strong>Lab 3 Solved!</strong> Path traversal bypass successful.
+        </div>
+
+        <h2 id="lab4">Lab 4: Web Shell Upload via Extension Blacklist Bypass</h2>
+
+        <div class="info-box">
+          <strong>Lab Description:</strong><br>
+          This lab contains a vulnerable image upload function. Certain file extensions are blacklisted, 
+          but this defense can be bypassed due to a fundamental flaw in the configuration of this blacklist.<br><br>
+          <strong>Goal:</strong> Upload a PHP web shell and exfiltrate <code>/home/carlos/secret</code>.<br>
+          <strong>Credentials:</strong> <code>wiener:peter</code>
+        </div>
+
+        <p>I first attempted to upload a malicious file containing a PHP web shell, but the upload was rejected and all previous methods failed, indicating that the application uses an extension blacklist to block specific file extensions such as <code>.php</code>.</p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;">
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab4img5.png" alt="Lab 4 - Rejection 1" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab4img1.png" alt="Lab 4 - Rejection 2" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+        </div>
+
+        <p>When I intercepted the <strong>POST request</strong> of the upload function, I noticed that <strong>the server was running Apache</strong>, which gave me an idea to bypass the restriction by modifying the filename parameter to <code>.htaccess</code>.</p>
+
+        <p>I modified <code>Content-Type</code> to <code>text/plain</code> to avoid triggering the file checks. Inside the <code>.htaccess</code> file, I added the following directive:</p>
+
+        <pre><code>AddType application/x-httpd-php .anrxsec</code></pre>
+
+        <p>This instructs the server to treat files with the <code>.anrxsec</code> extension as PHP files.</p>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab4img2.png" alt="Lab 4 - .htaccess Upload" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <p>Next, I uploaded a malicious PHP web file but changed its filename to <code>exploit_.anrxsec</code>. Since this extension was not blacklisted, the server accepted the upload successfully.</p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;">
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab4img3.png" alt="Lab 4 - Exploit Upload" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab4img4.png" alt="Lab 4 - Success" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+        </div>
+
+        <div class="success-box" style="border-left-color: #00c853;">
+          <strong>Lab 4 Solved!</strong> .htaccess blacklist bypass successful.
+        </div>
+
+        <h2 id="lab5">Lab 5: Web Shell Upload via Obfuscated File Extension</h2>
+
+        <div class="info-box">
+          <strong>Lab Description:</strong><br>
+          This lab contains a vulnerable image upload function. Certain file extensions are blacklisted, 
+          but this defense can be bypassed using a classic obfuscation technique (null byte injection).<br><br>
+          <strong>Goal:</strong> Upload a PHP web shell and exfiltrate <code>/home/carlos/secret</code>.<br>
+          <strong>Credentials:</strong> <code>wiener:peter</code>
+        </div>
+
+        <p>Like the previous labs, I started by intercepting the <strong>POST request</strong> of the avatar upload functionality.</p>
+
+        <p>When attempting to upload a PHP web shell malicious file, I observed that the server rejected the request and only accepted <code>.jpg</code> and <code>.png</code> extensions.</p>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab5img1.png" alt="Lab 5 - Rejection" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <p>This behavior indicates that the application validates the file extension. However, this validation is insufficient and can be bypassed using an <strong>obfuscation technique</strong>.</p>
+
+        <p>To exploit this, I modified the <strong>filename parameter</strong> to:</p>
+
+        <pre><code>filename="exploit.php%00.jpg"</code></pre>
+
+        <p><code>%00</code> represents a null byte. The server processes the filename as <code>exploit.php</code> and the <code>.jpg</code> part is ignored after the null byte.</p>
+
+        <p>Let's assume the back-end implementation looks like this:</p>
+
+        <pre data-language="php"><code><span class="keyword">&lt;?php</span>
+<span class="variable">$upload_dir</span> <span class="operator">=</span> <span class="string">"files/avatars/"</span>;
+<span class="variable">$filename</span> <span class="operator">=</span> <span class="variable">$_FILES</span>[<span class="string">'avatar'</span>][<span class="string">'name'</span>];
+
+<span class="keyword">if</span> (<span class="function">preg_match</span>(<span class="string">'/\.php$/i'</span>, <span class="variable">$filename</span>))
+    <span class="function">die</span>(<span class="string">"invalid file type"</span>);
+
+<span class="keyword">if</span> (<span class="operator">!</span><span class="function">preg_match</span>(<span class="string">'/\.(jpg|png)$/i'</span>, <span class="variable">$filename</span>))
+    <span class="function">die</span>(<span class="string">"only JPG and PNG allowed"</span>);
+
+<span class="function">move_uploaded_file</span>(<span class="variable">$_FILES</span>[<span class="string">'avatar'</span>][<span class="string">'tmp_name'</span>], <span class="variable">$upload_dir</span> <span class="operator">.</span> <span class="variable">$filename</span>);
+
+<span class="function">echo</span> <span class="string">"upload successful"</span>;
+<span class="keyword">?&gt;</span></code></pre>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab5img7.png" alt="Lab 5 - Null Byte Injection" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <div class="warning-box">
+          <strong>Null Byte Injection Explained:</strong><br>
+          When sending <code>filename="exploit.php%00.jpg"</code>:<br><br>
+          <strong>Validation Phase:</strong> The application treats the filename as a normal string. Since it ends with <code>.jpg</code>, it passes the extension check.<br><br>
+          <strong>Blacklist Check:</strong> <code>preg_match('/\.php$/i', $filename)</code> does not match because <code>.php</code> is not at the end of the string due to the appended <code>.jpg</code>.<br><br>
+          <strong>File System:</strong> When passed to <code>move_uploaded_file()</code>, the <strong>null byte <code>\0</code> acts as a string terminator</strong>, truncating the filename to <code>exploit.php</code>.<br><br>
+          <strong>Result:</strong> The blacklist check is bypassed and the file is treated as a PHP file.
+        </div>
+
+        <p>I sent the modified request and the server accepted the upload. I then intercepted the <strong>GET request</strong> to the account page to determine where the uploaded avatar was being served from.</p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;">
+          <div style="flex: 1; min-width: 150px;">
+            <img src="./imgs/lab5img2.png" alt="Lab 5 - Step 1" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 150px;">
+            <img src="./imgs/lab5img3.png" alt="Lab 5 - Step 2" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 150px;">
+            <img src="./imgs/lab5img4.png" alt="Lab 5 - Step 3" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 150px;">
+            <img src="./imgs/lab5img5.png" alt="Lab 5 - Step 4" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 150px;">
+            <img src="./imgs/lab5img6.png" alt="Lab 5 - Step 5" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+        </div>
+
+        <div class="success-box" style="border-left-color: #00c853;">
+          <strong>Lab 5 Solved!</strong> Null byte injection bypass successful.
+        </div>
+
+        <h2 id="lab6">Lab 6: Remote Code Execution via Polyglot Web Shell Upload</h2>
+
+        <div class="info-box">
+          <strong>Lab Description:</strong><br>
+          This lab contains a vulnerable image upload function. Although it checks the contents of the file 
+          to verify that it is a genuine image, it is still possible to upload and execute server-side code.<br><br>
+          <strong>Goal:</strong> Upload a PHP web shell and exfiltrate <code>/home/carlos/secret</code>.<br>
+          <strong>Credentials:</strong> <code>wiener:peter</code>
+        </div>
+
+        <p>To bypass the content validation, I created a <strong>polyglot file</strong> by embedding a PHP web shell script into the image comment field using <code>exiftool</code>:</p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;">
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab6img1.png" alt="Lab 6 - Exiftool 1" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <img src="./imgs/lab6img2.png" alt="Lab 6 - Exiftool 2" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color);" />
+          </div>
+        </div>
+
+        <p>The file still looked like an image but contained a malicious script:</p>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab6img3.png" alt="Lab 6 - Polyglot File" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <p>I uploaded it successfully as my avatar:</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab6img4.png" alt="Lab 6 - Upload Success" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <p>I then intercepted the <strong>GET request</strong> of the account page where the file was loaded and retrieved the content of the target file:</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab6img5.png" alt="Lab 6 - Success" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <div class="success-box" style="border-left-color: #00c853;">
+          <strong>Lab 6 Solved!</strong> Polyglot attack successful.
+        </div>
+
+        <h2 id="techniques">Attack Techniques Covered</h2>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Technique</th>
+                <th>Description</th>
+                <th>Lab</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Direct Web Shell Upload</strong></td>
+                <td>Uploading PHP files directly without any validation</td>
+                <td>Lab 1</td>
+              </tr>
+              <tr>
+                <td><strong>Content-Type Manipulation</strong></td>
+                <td>Changing <code>Content-Type</code> from <code>application/x-php</code> to <code>image/jpeg</code></td>
+                <td>Lab 2</td>
+              </tr>
+              <tr>
+                <td><strong>Path Traversal Injection</strong></td>
+                <td>Using <code>..%2f</code> in filename to move files outside the upload directory</td>
+                <td>Lab 3</td>
+              </tr>
+              <tr>
+                <td><strong>.htaccess Misconfiguration</strong></td>
+                <td>Uploading <code>.htaccess</code> to map custom extensions to PHP</td>
+                <td>Lab 4</td>
+              </tr>
+              <tr>
+                <td><strong>Null Byte Injection</strong></td>
+                <td>Using <code>%00</code> to truncate filenames and bypass extension checks</td>
+                <td>Lab 5</td>
+              </tr>
+              <tr>
+                <td><strong>Polyglot Attack</strong></td>
+                <td>Embedding PHP code in image metadata to bypass content validation</td>
+                <td>Lab 6</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="mitigations">Security Mitigations</h2>
+        <div class="info-box">
+          <strong>Recommended Defenses:</strong>
+          <ul style="margin: 8px 0 0 20px;">
+            <li><strong>Strict Validation:</strong> Perform server-side validation of file type, content, and size</li>
+            <li><strong>Whitelist Approach:</strong> Use a whitelist for allowed file extensions (never rely on blacklists)</li>
+            <li><strong>Storage Location:</strong> Store uploaded files outside the web root directory</li>
+            <li><strong>Execution Prevention:</strong> Disable execution permissions in upload directories</li>
+            <li><strong>File Renaming:</strong> Rename uploaded files with random or unique identifiers</li>
+            <li><strong>Content Inspection:</strong> Perform content inspection and malware scanning before storing files</li>
+            <li><strong>Input Sanitization:</strong> Sanitize filenames to prevent path traversal and injection attacks</li>
+            <li><strong>Double Extension Check:</strong> Validate against multiple extensions (e.g., <code>.php.jpg</code>)</li>
+          </ul>
+        </div>
+
+
+        <div class="info-box">
+          <strong>Disclaimer:</strong> <br>All activities in this writeup were conducted within a fully authorized, isolated laboratory environment. <br>These techniques are presented solely for educational and defensive security purposes.
+        </div>
+      </div>
+      <footer class="writeup-footer">
+        <a href="../../../#writeups" class="back-link">
+          <i class="fas fa-arrow-left"></i> Back to Writeups
+        </a>
+        <div class="share-links">
+          <a href="#" aria-label="Share on LinkedIn" title="Share on LinkedIn">
+            <i class="fab fa-linkedin-in"></i>
+          </a>
+          <a href="https://github.com/anxs3c" target="_blank" aria-label="View on GitHub" title="View on GitHub">
+            <i class="fab fa-github"></i>
+          </a>
+        </div>
+      </footer>
+    </div>
+  </main>
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a href="../../../" class="footer-logo">ANXS<span>3C</span></a>
+          <p>Red Team Operator · Offensive Security</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 ANXS3C · All rights reserved</span>
+      </div>
+    </div>
+  </footer>
+  <button class="back-to-top" id="backToTop">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+  <script src="../../../js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const progressBar = document.getElementById('writeupProgress');
+      window.addEventListener('scroll', function() {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = (scrollTop / docHeight) * 100;
+        progressBar.style.width = progress + '%';
+      });
+    });
+  </script>
+</body>
+</html>
