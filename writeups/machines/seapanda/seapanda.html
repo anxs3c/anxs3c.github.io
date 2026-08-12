@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Maritime ICS Attack Investigation - Full OT compromise through USB infection, credential harvesting, SSH lateral movement, and PLC manipulation" />
+  <meta name="keywords" content="ICS, SCADA, OT Security, Maritime, PLC, Modbus, USB Attack, Lateral Movement, Industrial Control Systems" />
+  <meta name="author" content="ANXS3C" />
+  <title>Maritime ICS Attack Investigation - ANXS3C</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="../../../css/style.css" />
+  <link rel="stylesheet" href="../../../css/writeup.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>" />
+</head>
+<body class="writeup-page">
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+  <div class="writeup-progress">
+    <div class="progress-bar" id="writeupProgress"></div>
+  </div>
+  <nav class="navbar" id="navbar">
+    <div class="container">
+      <a href="../../../" class="logo"><span>🛡️ </span>ANXS<span>3C</span></a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="https://anxs3c.github.io/#writeups">Writeups</a></li>
+      </ul>
+      <div class="nav-controls">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <i class="fas fa-moon"></i>
+        </button>
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+  <div class="cyber-lines">
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line-vertical"></div>
+    <div class="line-vertical"></div>
+    <div class="line-vertical"></div>
+  </div>
+  <main id="main">
+    <div class="writeup-container">
+      <header class="writeup-header">
+        <div class="badge">Incident Investigation</div>
+        <h1>Maritime <span class="highlight">ICS Attack</span></h1>
+        <p class="subtitle">
+          Reconstructing an Operational Technology Cyber Attack: From USB Infection to PLC Manipulation
+          — A simulated cyber-physical attack targeting a maritime shipping operator's industrial 
+          control systems, analyzed during the DSGN competition at Secodojo Labs.
+        </p>
+        <div class="writeup-meta">
+          <span class="meta-tag"><i class="fas fa-tag"></i> ICS/OT Security</span>
+          <span class="meta-tag"><i class="fas fa-signal"></i> Advanced</span>
+          <span class="meta-tag"><i class="fas fa-calendar"></i> August 2026</span>
+          <span class="meta-tag"><i class="fas fa-ship"></i> Maritime</span>
+          <span class="meta-tag"><i class="fas fa-microchip"></i> PLC/SCADA</span>
+          <span class="meta-tag"><i class="fab fa-github"></i> <a href="https://github.com/anxs3c" target="_blank">GitHub</a></span>
+        </div>
+      </header>
+      <nav class="toc" aria-label="Table of Contents">
+        <div class="toc-header">
+          <i class="fas fa-list"></i>
+          <h3>Contents</h3>
+        </div>
+        <ul class="toc-grid">
+          <li><a href="#overview">Attack Overview</a></li>
+          <li><a href="#environment">Investigation Environment</a></li>
+          <li><a href="#phase1">Phase 1: Initial Compromise</a></li>
+          <li><a href="#phase2">Phase 2: Credential Harvesting</a></li>
+          <li><a href="#phase3">Phase 3: SSH Lateral Movement</a></li>
+          <li><a href="#phase4">Phase 4: PLC Targeting</a></li>
+          <li><a href="#phase5">Phase 5: OT Manipulation</a></li>
+          <li><a href="#timeline">Attack Timeline</a></li>
+          <li><a href="#attackchain">Attack Chain &amp; MITRE Mapping</a></li>
+        </ul>
+      </nav>
+      <div class="writeup-body">
+        <h2 id="overview">Attack Overview</h2>
+        <p>
+          This attack reconstruction was played in <strong>Secodojo Labs</strong> during the 
+          <strong>DSGN</strong> competition.
+        </p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/SepandaLab.png" alt="Secodojo Lab Environment" style="max-width: 90%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <div class="warning-box">
+          <strong>Targeted Sabotage:</strong> The operation was a <strong>multi-stage cyber-physical attack</strong> 
+          designed to induce kinetic impact on the vessel's stability systems. The attacker leveraged 
+          <strong>IT/OT convergence</strong> to pivot from Windows-based management systems to Linux-based ICS, 
+          manipulating <strong>Modbus TCP registers</strong> to alter vessel control logic.
+        </div>
+
+        <p>
+          In this investigation, I analyzed a simulated <strong>cyber-physical attack</strong> targeting a 
+          <strong>maritime shipping operator</strong>. The attacker successfully compromised access into the 
+          vessel's ICS (Industrial Control System) environment controlling <strong>OpenPLC</strong>.
+        </p>
+        
+        <p>
+          The attacker demonstrated a high level of sophistication, carefully chaining multiple techniques 
+          to pivot from the <strong>IT environment</strong> into critical <strong>OT infrastructure</strong>.
+        </p>
+
+        <h2 id="environment">Investigation Environment</h2>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/EnvMachines.png" alt="Environment Machines" style="max-width: 80%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        
+        <p>
+          In a real-world industrial environment, different machines have different roles, which is why the 
+          lab has multiple machines instead of one. To reconstruct the attack chain, the lab provided 
+          multiple systems representing both corporate IT and OT networks:
+        </p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Machine</th>
+                <th>OS</th>
+                <th>Role</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>VESSEL-ADMIN Workstation</strong></td>
+                <td>Windows</td>
+                <td>Administrative workstation used to manage vessel systems</td>
+              </tr>
+              <tr>
+                <td><strong>MAINTENANCE Server</strong></td>
+                <td>Linux</td>
+                <td>Maintenance server for managing operational systems</td>
+              </tr>
+              <tr>
+                <td><strong>OT-GW (Operational Technology Gateway)</strong></td>
+                <td>Linux</td>
+                <td>Gateway between corporate IT network and industrial control systems</td>
+              </tr>
+              <tr>
+                <td><strong>Splunk SIEM Platform</strong></td>
+                <td>Platform</td>
+                <td>Centralized log analysis and monitoring</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="phase1">Phase 1: Initial Compromise (Weaponization &amp; Delivery)</h2>
+        <p>
+          The attack began with the introduction of a <strong>malicious USB</strong> device connected to 
+          the administrative workstation <code>VESSEL-ADMIN-WS</code>. This allowed the attacker to deliver 
+          the initial payload.
+        </p>
+        
+        <p>
+          A binary named <code>USBInstaller.exe</code> was executed directly from the removable drive. 
+          The installer dropped a malicious binary <code>vessel_update.exe</code>. The malware injected 
+          its code into a legitimate process to evade detection.
+        </p>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/logs1.png" alt="Sysmon Logs - USB Installation" style="max-width: 90%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <pre data-language="powershell"><code><span class="comment">03/13/2026 05:07:02 PM</span>
+<span class="variable">LogName</span>=<span class="string">Microsoft-Windows-Sysmon/Operational</span>
+<span class="variable">EventCode</span>=<span class="number">11</span>
+<span class="variable">EventType</span>=<span class="number">4</span>
+<span class="variable">ComputerName</span>=<span class="string">VESSEL-ADMIN-WS</span>
+<span class="variable">User</span>=<span class="string">VESSEL-ADMIN-WS\Administrator</span>
+<span class="variable">Sid</span>=<span class="string">S-1-5-21-1900926252-2848036488-3804366386-500</span>
+<span class="variable">SourceName</span>=<span class="string">Microsoft-Windows-Sysmon</span>
+<span class="variable">Type</span>=<span class="string">Information</span>
+<span class="variable">RecordNumber</span>=<span class="number">22011</span>
+<span class="variable">TaskCategory</span>=<span class="string">FileCreate</span>
+<span class="variable">Message</span>=<span class="string">File created:</span>
+<span class="variable">RuleName</span>: <span class="operator">-</span>
+<span class="variable">UtcTime</span>: <span class="number">2026-01-20</span> <span class="number">17</span>:<span class="number">07</span>:<span class="number">02.401</span>
+<span class="variable">ProcessGuid</span>: <span class="operator">{</span><span class="number">6b7f4a2c</span><span class="operator">-</span><span class="number">3d3a</span><span class="operator">-</span><span class="number">65ad</span><span class="operator">-</span><span class="number">0000</span><span class="operator">-</span><span class="number">00102a3f0000</span><span class="operator">}</span>
+<span class="variable">ProcessId</span>: <span class="number">4128</span>
+<span class="variable">Image</span>: <span class="string">E:\USBInstaller.exe</span>
+<span class="variable">TargetFilename</span>: <span class="string">C:\Users\Administrator\AppData\Local\Temp\vessel_update.exe</span>
+<span class="variable">CreationUtcTime</span>: <span class="number">2026-01-20</span> <span class="number">17</span>:<span class="number">07</span>:<span class="number">02.401</span>
+<span class="variable">User</span>: <span class="string">VESSEL-ADMIN-WS\Administrator</span>
+<span class="variable">Hashes</span>: <span class="string">SHA256=7F0C2A3B5E0E7D2E2A7B7A0E0D7DAB3A7B8E5D4C2B1A0F9E8D7C6B5A4E3D2C1B</span>
+<span class="variable">AdditionalInfo</span>: <span class="string">SourceDrive=E:\ (DriveType=Removable; Device=USBSTOR)</span></code></pre>
+
+        <div class="info-box">
+          <strong>Infection Vector: Physical USB Drive</strong><br>
+          <strong>File executed:</strong> <code>E:\USBInstaller.exe</code><br>
+          <strong>Dropped malicious binary:</strong> <code>C:\Users\Administrator\AppData\Local\Temp\vessel_update.exe</code><br>
+          <strong>Malware Technique:</strong> DLL Sideloading (injected DLL into legitimate process to hide activity)<br>
+          <strong>Anti-Forensics:</strong> Self-deletion routine after injection
+        </div>
+
+        <h4>Malware Functionality (Fake Update)</h4>
+        <ul>
+          <li>Claimed to be a software update</li>
+          <li>In reality: stealth execution, credential theft, persistence, and preparation for OT attack</li>
+        </ul>
+
+        <h2 id="phase2">Phase 2: Credential Harvesting &amp; Database Access</h2>
+        <p>
+          After establishing a foothold, the attacker began searching for <strong>credentials</strong> 
+          stored locally on the system. During this phase, the attacker accessed a database associated 
+          with the web application running on the system.
+        </p>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/logs3.png" alt="Credential Harvesting Logs 1" style="max-width: 90%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/logs4.png" alt="Credential Harvesting Logs 2" style="max-width: 90%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <div class="highlight-box">
+          <strong>Recovered Credentials:</strong> <code>arjun/SeaPanda123</code>
+        </div>
+
+        <ul>
+          <li>Malware scanned local files for credentials</li>
+          <li>Extracted <strong>Linux administrative credentials</strong>: <code>arjun:SeaPanda123!</code></li>
+          <li><strong>Splunk logs</strong> revealed unusual file access followed by outbound connections to C2</li>
+        </ul>
+
+        <p>
+          With the stolen credentials, the attacker authenticated to other systems within the internal network. 
+          This phase demonstrates <strong>Credential Reuse</strong> for <strong>Lateral Movement</strong>.
+        </p>
+
+        <h2 id="phase3">Phase 3: SSH Lateral Movement</h2>
+        <p>
+          Using the credentials of user <code>arjun</code>, the attacker initiated an SSH session from the 
+          Windows workstation to a Linux-based <strong>OT gateway</strong>.
+        </p>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/logs5.png" alt="SSH Lateral Movement Logs" style="max-width: 90%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <pre data-language="bash"><code><span class="prompt">$</span> <span class="function">ssh</span> <span class="variable">arjun</span><span class="variable">@172.16.237.77</span>
+<span class="output">arjun@172.16.237.77's password: ********</span>
+<span class="output">Last login: Wed Mar 13 09:30:22 2026 from 172.16.237.10</span>
+<span class="prompt">arjun@ot-gw:~$</span> <span class="function">whoami</span>
+<span class="output">arjun</span>
+<span class="prompt">arjun@ot-gw:~$</span> <span class="function">sudo</span> <span class="operator">-</span><span class="function">l</span>
+<span class="output">Matching Defaults entries for arjun on ot-gw:
+    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
+
+User arjun may run the following commands on ot-gw:
+    (ALL : ALL) ALL</span></code></pre>
+
+        <div class="info-box">
+          <strong>Lateral Movement Details:</strong><br>
+          <strong>Used stolen credentials</strong> to SSH from Windows to Linux OT management server 
+          (<code>172.16.237.77</code>)<br>
+          <strong>Modified</strong> <code>/etc/ssh/sshd_config</code> for persistence
+        </div>
+
+        <h2 id="phase4">Phase 4: PLC Targeting and OT Reconnaissance</h2>
+        <p>
+          Once inside the OT Gateway, the attacker performed reconnaissance to identify industrial services 
+          running on the system.
+        </p>
+
+        <h4>Reconnaissance Commands</h4>
+        <ul>
+          <li><strong>System identification:</strong> <code>whoami &amp; uname -a</code></li>
+          <li><strong>Check open OT ports:</strong> <code>ss -tanup</code> (to find Modbus Port 502 and Web Port 8080)</li>
+          <li><strong>TCP scan (living off the land):</strong> <code>for p in {1..65535}; do echo >/dev/tcp/...</code></li>
+        </ul>
+
+        <p>
+          The attacker uploaded a malicious diagnostic tool into a legitimate directory: 
+          <code>OpenPLC_Diagnostic_Tool</code>
+        </p>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/PLC-modbus.png" alt="PLC Modbus Attack" style="max-width: 90%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/logs6.png" alt="PLC Attack Logs" style="max-width: 90%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <pre data-language="bash"><code><span class="variable">Mar</span> <span class="number">12</span> <span class="number">22</span>:<span class="number">43</span>:<span class="number">20</span> <span class="variable">ip-172-16-237-77</span> <span class="function">start_openplc.sh</span>[<span class="number">39790</span>]: <span class="operator">[</span><span class="variable">INFO</span><span class="operator">]</span> <span class="number">22</span>:<span class="number">43</span>:<span class="number">20</span> <span class="operator">-</span> <span class="number">192.168</span>.<span class="number">11.28</span> <span class="operator">-</span> <span class="operator">-</span> <span class="operator">[</span><span class="number">19</span>/<span class="variable">Jan</span>/<span class="number">2026</span> <span class="number">22</span>:<span class="number">43</span>:<span class="number">20</span><span class="operator">]</span><span class="string">"GET /compile-program?file=909837.st HTTP/1.1" 200 -</span></code></pre>
+
+        <div class="warning-box">
+          <strong>Target: OpenPLC Runtime (Vessel Control)</strong><br>
+          <strong>Tool deployed:</strong> <code>OpenPLC_Diagnostic_Tool</code> in the qModMaster directory<br>
+          <strong>Protocol:</strong> Modbus TCP on port 502<br>
+          <strong>Malicious Payload:</strong> <code>909837.st</code> uploaded via OpenPLC Web Interface 
+          (<code>/compile-program?file=909837.st</code>)<br>
+          <strong>Vulnerability:</strong> The PLC allowed <strong>Unauthorized Write Access</strong> to registers
+        </div>
+
+        <h2 id="phase5">Phase 5: OT Manipulation</h2>
+        <p>
+          At this stage of the attack chain, the threat actor had successfully pivoted into the OT environment 
+          and gained the ability to manipulate the PLC controlling the vessel's critical operations.
+        </p>
+        
+        <p>
+          This level of access allowed the attacker to potentially influence the vessel's 
+          <strong>ballast control system</strong>, which directly affects the ship's stability.
+        </p>
+
+        <h4>Modbus TCP Exploitation Details</h4>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Component</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Target System</strong></td><td>OpenPLC Runtime (Vessel Control)</td></tr>
+              <tr><td><strong>Attack Vector</strong></td><td>Web Interface Upload (<code>/compile-program</code>)</td></tr>
+              <tr><td><strong>Malicious File</strong></td><td><code>909837.st</code> (PLC logic)</td></tr>
+              <tr><td><strong>Protocol</strong></td><td>Modbus TCP (Port 502)</td></tr>
+              <tr><td><strong>Impact</strong></td><td>Manipulation of ballast control logic</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="timeline">Attack Timeline</h2>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Event</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>2026-03-13 08:00</strong></td>
+                <td>USB drive inserted; <code>E:\USBInstaller.exe</code> executed on VESSEL-ADMIN-WS</td>
+              </tr>
+              <tr>
+                <td><strong>2026-03-13 08:30</strong></td>
+                <td>Malicious <code>vessel_update.exe</code> runs (process hollowing, MD5=6103328e...)</td>
+              </tr>
+              <tr>
+                <td><strong>2026-03-13 09:00</strong></td>
+                <td>Scheduled task "VesselMaintenance" created; payload contacts C2 (Sliver)</td>
+              </tr>
+              <tr>
+                <td><strong>2026-03-13 09:15</strong></td>
+                <td>Attacker runs PowerShell port scan (TCPClient loop)</td>
+              </tr>
+              <tr>
+                <td><strong>2026-03-13 09:30</strong></td>
+                <td>MySQL credentials dumped (<code>arjun:SeaPanda123!</code> found)</td>
+              </tr>
+              <tr>
+                <td><strong>2026-03-13 09:45</strong></td>
+                <td>SSH login to <code>172.16.237.77</code> using arjun (SSH lateral movement)</td>
+              </tr>
+              <tr>
+                <td><strong>2026-03-13 10:00</strong></td>
+                <td>On Linux: attacker runs <code>OpenPLC_Diagnostic_Tool</code> (MD5=6103... Go binary)</td>
+              </tr>
+              <tr>
+                <td><strong>2026-03-13 10:10</strong></td>
+                <td><code>1..254 | Test-Connection</code> ping sweep on <code>172.16.237.x</code></td>
+              </tr>
+              <tr>
+                <td><strong>2026-03-13 10:30</strong></td>
+                <td>Attacker uploads <code>909837.st</code> via OpenPLC web interface</td>
+              </tr>
+              <tr>
+                <td><strong>2026-03-13 10:35</strong></td>
+                <td>Modbus/TCP writes to PLC on port 502 (ballast control logic overwritten)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="attackchain">Attack Chain &amp; MITRE ATT&CK Mapping</h2>
+        
+        <h3>Attack Chain Visualization</h3>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/attchain.png" alt="Attack Chain" style="max-width: 55%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <div class="attack-phase">
+          <h3>Attack Chain Steps</h3>
+          <ol>
+            <li><strong>USB Device</strong> — Physical insertion of malicious USB drive</li>
+            <li><strong>Windows Workstation (VESSEL-ADMIN-WS)</strong> — Initial compromise</li>
+            <li><strong>Malware Execution (vessel_update.exe)</strong> — Process hollowing and persistence</li>
+            <li><strong>Credential Extraction</strong> — Database access and credential theft</li>
+            <li><strong>Use of Stolen Credentials</strong> — <code>arjun:SeaPanda123</code></li>
+            <li><strong>SSH Lateral Movement</strong> — Pivot to OT Gateway</li>
+            <li><strong>Compromise of OT Gateway</strong> — Access to industrial control environment</li>
+            <li><strong>Modbus Exploitation</strong> — Manipulation of PLC registers</li>
+            <li><strong>Malicious PLC Logic Deployment</strong> — <code>909837.st</code> uploaded</li>
+          </ol>
+        </div>
+
+        <h3>MITRE ATT&CK Mapping</h3>
+        <p>The attacker techniques observed during the investigation map to several MITRE ATT&CK tactics:</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Tactic</th>
+                <th>Technique</th>
+                <th>ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Initial Access</strong></td>
+                <td>Removable Media</td>
+                <td><code>T1091</code></td>
+              </tr>
+              <tr>
+                <td><strong>Execution</strong></td>
+                <td>Command and Scripting Interpreter</td>
+                <td><code>T1059</code></td>
+              </tr>
+              <tr>
+                <td><strong>Defense Evasion</strong></td>
+                <td>Process Injection (Process Hollowing)</td>
+                <td><code>T1055.012</code></td>
+              </tr>
+              <tr>
+                <td><strong>Persistence</strong></td>
+                <td>Scheduled Task</td>
+                <td><code>T1053</code></td>
+              </tr>
+              <tr>
+                <td><strong>Credential Access</strong></td>
+                <td>Credentials from Files</td>
+                <td><code>T1552</code></td>
+              </tr>
+              <tr>
+                <td><strong>Discovery</strong></td>
+                <td>Network Service Scanning</td>
+                <td><code>T1046</code></td>
+              </tr>
+              <tr>
+                <td><strong>Lateral Movement</strong></td>
+                <td>SSH</td>
+                <td><code>T1021.004</code></td>
+              </tr>
+              <tr>
+                <td><strong>Command &amp; Control</strong></td>
+                <td>Sliver C2</td>
+                <td><code>T1071</code></td>
+              </tr>
+              <tr>
+                <td><strong>Impact</strong></td>
+                <td>Manipulation of Control Logic</td>
+                <td><code>ICS Technique</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="success-box" style="border-left-color: #00c853;">
+          <strong>Investigation Conclusion:</strong> The investigation reconstructed a full IT-to-OT intrusion. 
+          The attacker gained initial access via a malicious USB device, executed malware on the Windows 
+          workstation, extracted credentials, and used them for SSH lateral movement to the OT gateway. 
+          From there, the threat actor interacted with the OpenPLC system and deployed malicious PLC logic 
+          over Modbus TCP (port 502), gaining the ability to manipulate vessel control operations.
+        </div>
+
+        <div class="info-box">
+          <strong>Disclaimer:</strong> <br>All activities in this writeup were conducted within a fully authorized, isolated laboratory environment. <br>These techniques are presented solely for educational and defensive security purposes.
+        </div>
+
+        <div style="margin-top: 30px; padding: 20px; background: var(--bg-secondary); border-radius: 8px; border: 1px solid var(--border-color);">
+          <h4 style="margin-top: 0; color: var(--text-primary);"> Key Takeaways</h4>
+          <ul style="margin: 0; padding-left: 20px;">
+            <li><strong>IT/OT Convergence</strong> creates attack vectors that bridge corporate and industrial networks</li>
+            <li><strong>Physical USB devices</strong> remain a viable initial access vector in isolated environments</li>
+            <li><strong>Credential reuse</strong> across IT and OT systems enables lateral movement</li>
+            <li><strong>Modbus TCP</strong> lacks authentication, making it vulnerable to manipulation</li>
+            <li><strong>OpenPLC</strong> web interfaces can be exploited to deploy malicious logic</li>
+          </ul>
+        </div>
+      </div>
+      <footer class="writeup-footer">
+        <a href="../../../#writeups" class="back-link">
+          <i class="fas fa-arrow-left"></i> Back to Writeups
+        </a>
+        <div class="share-links">
+          <a href="#" aria-label="Share on LinkedIn" title="Share on LinkedIn">
+            <i class="fab fa-linkedin-in"></i>
+          </a>
+          <a href="https://github.com/anxs3c" target="_blank" aria-label="View on GitHub" title="View on GitHub">
+            <i class="fab fa-github"></i>
+          </a>
+        </div>
+      </footer>
+    </div>
+  </main>
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a href="../../../" class="footer-logo">ANXS<span>3C</span></a>
+          <p>Red Team Operator · Offensive Security</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 ANXS3C · All rights reserved</span>
+      </div>
+    </div>
+  </footer>
+  <button class="back-to-top" id="backToTop">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+  <script src="../../../js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const progressBar = document.getElementById('writeupProgress');
+      window.addEventListener('scroll', function() {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = (scrollTop / docHeight) * 100;
+        progressBar.style.width = progress + '%';
+      });
+    });
+  </script>
+</body>
+</html>
