@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="OS Command Injection Vulnerabilities - Complete walkthrough of 3 web application security labs covering direct and blind command injection techniques" />
+  <meta name="keywords" content="OS Command Injection, RCE, Web Security, Pentesting, Linux, System Commands" />
+  <meta name="author" content="ANXS3C" />
+  <title>OS Command Injection Vulnerabilities - ANXS3C</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="../../../css/style.css" />
+  <link rel="stylesheet" href="../../../css/writeup.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg><text y='.9em' font-size='90'>⚡</text></svg>">
+</head>
+<body class="writeup-page">
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+  <div class="writeup-progress">
+    <div class="progress-bar" id="writeupProgress"></div>
+  </div>
+  <nav class="navbar" id="navbar">
+    <div class="container">
+      <a href="../../../" class="logo"><span>🛡️ </span>ANXS<span>3C</span></a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="https://anxs3c.github.io/#writeups">Writeups</a></li>
+      </ul>
+      <div class="nav-controls">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <i class="fas fa-moon"></i>
+        </button>
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+  <div class="cyber-lines">
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line-vertical"></div>
+    <div class="line-vertical"></div>
+    <div class="line-vertical"></div>
+  </div>
+  <main id="main">
+    <div class="writeup-container">
+      <header class="writeup-header">
+        <div class="badge">Web Security Labs</div>
+        <h1>OS Command <span class="highlight">Injection</span></h1>
+        <p class="subtitle">
+          A comprehensive walkthrough of 3 web application security labs covering direct (in-band) 
+          and blind (out-of-band) OS command injection techniques
+        </p>
+        <div class="writeup-meta">
+          <span class="meta-tag"><i class="fas fa-tag"></i> Web Security</span>
+          <span class="meta-tag"><i class="fas fa-signal"></i> Intermediate</span>
+          <span class="meta-tag"><i class="fas fa-calendar"></i> August 2026</span>
+          <span class="meta-tag"><i class="fas fa-terminal"></i> RCE</span>
+          <span class="meta-tag"><i class="fas fa-shield-halved"></i> Command Injection</span>
+          <span class="meta-tag"><i class="fab fa-github"></i> <a href="https://github.com/anxs3c" target="_blank">GitHub</a></span>
+        </div>
+      </header>
+      <nav class="toc" aria-label="Table of Contents">
+        <div class="toc-header">
+          <i class="fas fa-list"></i>
+          <h3>Contents</h3>
+        </div>
+        <ul class="toc-grid">
+          <li><a href="#overview">Overview</a></li>
+          <li><a href="#types">Types of OS Command Injection</a></li>
+          <li><a href="#lab1">Lab 1: Simple Case</a></li>
+          <li><a href="#lab2">Lab 2: Time Delays</a></li>
+          <li><a href="#lab3">Lab 3: Output Redirection</a></li>
+          <li><a href="#mitigations">Security Mitigations</a></li>
+        </ul>
+      </nav>
+      <div class="writeup-body">
+        <h2 id="overview">Overview</h2>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/AttackTopology.png" alt="Attack Topology Diagram" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <div class="warning-box">
+          <strong>What is OS Command Injection?</strong><br><br>
+          An Operating System Command Injection vulnerability is a critical security flaw that allows 
+          an attacker to execute system commands on a server. It happens when an application sends 
+          user input to the system shell without proper validation.<br><br>
+          A successful attack can lead to:
+          <ul style="margin: 8px 0 0 20px;">
+            <li>Data theft, modification, or deletion</li>
+            <li>Full server control</li>
+            <li>Lateral movement within the network</li>
+            <li>Persistence and backdoor deployment</li>
+          </ul>
+        </div>
+
+        <p>
+          Web command injection happens when an attacker sends malicious commands through inputs.
+          This occurs because the application doesn't properly check or filter user input.
+          The attacker can execute commands on the server using the same permissions as the application.
+        </p>
+
+        <h2 id="types">Types of OS Command Injection</h2>
+
+        <h3>Direct (In-band)</h3>
+        <ul>
+          <li>The output of the injected command is returned directly in the HTTP response</li>
+          <li>This is the easiest type to exploit because the attacker can immediately see the result</li>
+        </ul>
+
+        <h3>Blind (Out-of-band)</h3>
+        <p>The command is executed but its output is not shown in the response. The attacker must use alternative techniques:</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Technique</th>
+                <th>Description</th>
+                <th>Example</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Time-Based</strong></td>
+                <td>Commands like <code>sleep</code> or <code>ping</code> create a delay. If response time increases, execution is confirmed</td>
+                <td><code>|| sleep 10</code></td>
+              </tr>
+              <tr>
+                <td><strong>Output Redirection</strong></td>
+                <td>Command output is written to a file in a writable directory, then accessed via the browser</td>
+                <td><code>whoami > /var/www/images/output.txt</code></td>
+              </tr>
+              <tr>
+                <td><strong>Out-of-Band (OOB)</strong></td>
+                <td>Commands like <code>nslookup</code> or <code>curl</code> send requests to an attacker-controlled system</td>
+                <td><code>nslookup attacker.com</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="lab1">Lab 1: OS Command Injection, Simple Case</h2>
+
+        <div class="info-box">
+          <strong>Lab Description:</strong><br>
+          This lab contains an OS command injection vulnerability in the product stock checker. 
+          The application executes a shell command containing user-supplied product and store IDs, 
+          and returns the raw output from the command in its response.<br><br>
+          <strong>Goal:</strong> Execute the <code>whoami</code> command to determine the name of the current user.
+        </div>
+
+        <p>
+          First, I explored the website and noticed that the product page uses a <strong>URL parameter</strong> 
+          like <code>productId=18</code>:
+        </p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab1img1.png" alt="Lab 1 - Product Page" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <p>
+          When I changed it to <code>productId=1</code>, the page loaded a different product, indicating 
+          the app uses this input dynamically (potential IDOR).
+        </p>
+
+        <p><strong>How does it work?</strong></p>
+        <p>
+          The vulnerability is exploited by injecting OS command metacharacters into the user input. 
+          These characters can terminate the intended command and allow a new, malicious command to be executed.
+        </p>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab1img2.png" alt="Lab 1 - Command Injection Concept" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <p>
+          I tried injecting the <code>whoami</code> command into <code>productId</code>, but nothing happened, 
+          so this parameter seemed safe.
+        </p>
+
+        <p>
+          Since the lab indicates that the vulnerability is in the <strong>product stock checker</strong>, 
+          I moved to that functionality:
+        </p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab1img3.png" alt="Lab 1 - Stock Checker" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <p>While intercepting the request, I noticed parameters that looked more interesting:</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab1img4.png" alt="Lab 1 - Intercepted Request" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <p>I injected a malicious payload by adding <code>|whoami</code>:</p>
+
+        <pre><code>productId=18&storeId=1|whoami</code></pre>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab1img5.png" alt="Lab 1 - Successful Injection" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <p>Using the <code>ls</code> command, I identified that the shell script filename used is:</p>
+        <div class="highlight-box">
+          <code>stockreport.sh</code>
+        </div>
+
+        <h4>How the Attack Works</h4>
+
+        <p>Let's assume the vulnerable PHP code is:</p>
+
+        <pre data-language="php"><code><span class="keyword">&lt;?php</span>
+<span class="keyword">if</span> (<span class="variable">$_SERVER</span>[<span class="string">"REQUEST_METHOD"</span>] <span class="operator">==</span> <span class="string">"POST"</span>) <span class="operator">{</span>
+    <span class="variable">$productId</span> <span class="operator">=</span> <span class="variable">$_POST</span>[<span class="string">'productId'</span>];
+    <span class="variable">$storeId</span> <span class="operator">=</span> <span class="variable">$_POST</span>[<span class="string">'storeId'</span>];
+    <span class="variable">$output</span> <span class="operator">=</span> <span class="function">system</span>(<span class="string">"stockreport.sh $productId $storeId"</span>);
+    <span class="function">echo</span> <span class="string">"&lt;pre&gt;$output&lt;/pre&gt;"</span>;
+<span class="operator">}</span>
+<span class="keyword">?&gt;</span></code></pre>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab1img6.png" alt="Lab 1 - PHP Code" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <div class="attack-phase">
+          <h3>Attack Breakdown</h3>
+          <ol>
+            <li>
+              <strong>Normal Request:</strong> The form sends data: <br>
+              <code>productId=15</code> &amp; <code>storeId=3</code>
+            </li>
+            <li>
+              <strong>PHP Execution:</strong> The PHP code builds and executes:<br>
+              <code>system("stockreport.sh 15 3")</code>
+            </li>
+            <li>
+              <strong>Attacker Intercepts:</strong> The attacker changes the request from:<br>
+              <code>productId=15&storeId=3</code> to <code>productId=15&storeId=3|whoami</code>
+            </li>
+            <li>
+              <strong>Modified Execution:</strong> PHP now executes:<br>
+              <code>system("stockreport.sh $productId $storeId|whoami")</code><br>
+              <code>stockreport.sh 15 3|whoami</code><br><br>
+              The <code>system()</code> function in PHP passes the whole value string to the shell.
+            </li>
+            <li>
+              <strong>Shell Interpretation:</strong> The shell sees the <code>|</code> operator and interprets it as:<br>
+              <code>run stockreport.sh 15 3</code> first, then <code>run whoami</code> command.
+            </li>
+            <li>
+              <strong>Result:</strong> The server returns the results of both commands — the stock check value and the operating system user.
+            </li>
+          </ol>
+        </div>
+
+        <div class="success-box" style="border-left-color: #00c853;">
+          <strong>Lab 1 Solved!</strong> The attacker runs commands on the server because user input is directly used in a system command without validation.
+        </div>
+
+        <h2 id="lab2">Lab 2: Blind OS Command Injection with Time Delays</h2>
+
+        <div class="info-box">
+          <strong>Lab Description:</strong><br>
+          This lab contains a blind OS command injection vulnerability in the feedback function. 
+          The application executes a shell command containing the user-supplied details. The output 
+          from the command is not returned in the response.<br><br>
+          <strong>Goal:</strong> Exploit the blind OS command injection vulnerability to cause a 10-second delay.
+        </div>
+
+        <p>
+          I started by reviewing the application and found a feedback form with typical input fields 
+          such as name, email, subject, and message:
+        </p>
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab2img1.png" alt="Lab 2 - Feedback Form" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <p>
+          Since the vulnerability is blind, I understood that the command output would not be displayed. 
+          To verify the exploitation, I relied on a <strong>time delay technique</strong>.
+        </p>
+
+        <p>I chose the <strong>email parameter</strong> and injected the following payload:</p>
+
+        <pre><code>email=test||sleep+10||</code></pre>
+
+        <ul>
+          <li><code>||</code> — used to append another command</li>
+          <li><code>sleep 10</code> — forces the server to pause for 10 seconds</li>
+        </ul>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab2img2.png" alt="Lab 2 - Time Delay Injection" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <div class="success-box" style="border-left-color: #00c853;">
+          <strong>Lab 2 Solved!</strong> The server response was noticeably delayed by about 10 seconds, 
+          confirming that the injected command was executed successfully.
+        </div>
+
+        <h2 id="lab3">Lab 3: Blind OS Command Injection with Output Redirection</h2>
+
+        <div class="info-box">
+          <strong>Lab Description:</strong><br>
+          This lab contains a blind OS command injection vulnerability in the feedback function. 
+          The output from the command is not returned in the response. However, you can use output 
+          redirection to capture the output. There is a writable folder at <code>/var/www/images/</code>.<br><br>
+          <strong>Goal:</strong> Execute the <code>whoami</code> command and retrieve the output.
+        </div>
+
+        <p>
+          Initially, I tried to apply the same technique used in the previous lab, but this challenge 
+          required a different approach. After multiple attempts, I focused on the feedback form and 
+          intercepted the request.
+        </p>
+
+        <p>
+          I observed that the data was sent via a <strong>POST request</strong>, making the 
+          <strong>email parameter</strong> a good candidate for testing.
+        </p>
+
+        <div class="info-box">
+          <strong>Writable Directory Identified:</strong><br>
+          <code>/var/www/images/</code><br><br>
+          Any files written to this directory could be accessed through the browser using:
+          <code>https://&lt;lab-id&gt;.web-security-academy.net/images/</code>
+        </div>
+
+        <p>I decided to redirect the output of a system command into a file within this directory:</p>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab3img1.png" alt="Lab 3 - Output Redirection" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <p>
+          After creating the file, I navigated to a page where an image was being loaded and intercepted 
+          the request responsible for fetching that image. I then modified the filename parameter to point 
+          to the file I had created:
+        </p>
+
+        <pre><code>/images/ANRXMR.txt</code></pre>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <img src="./imgs/lab3img2.png" alt="Lab 3 - File Retrieval" style="max-width: 95%; border-radius: 8px; border: 1px solid var(--border-color);" />
+        </div>
+
+        <div class="success-box" style="border-left-color: #00c853;">
+          <strong>Lab 3 Solved!</strong> The command output was successfully written to the file and retrieved 
+          through the application.
+        </div>
+
+        <h2 id="mitigations">Security Mitigations</h2>
+
+        <div class="info-box">
+          <strong>Recommended Defenses:</strong>
+          <ul style="margin: 8px 0 0 20px;">
+            <li><strong>Never use user input in system commands</strong> — Avoid functions like <code>system()</code>, <code>exec()</code>, <code>shell_exec()</code>, <code>passthru()</code> with user input</li>
+            <li><strong>Use built-in APIs</strong> — Use language-specific functions instead of shell commands (e.g., PHP's built-in file functions over <code>cat</code> or <code>grep</code>)</li>
+            <li><strong>Input validation</strong> — Whitelist allowed values (e.g., numeric IDs, pre-defined choices)</li>
+            <li><strong>Escaping</strong> — If shell execution is unavoidable, escape user input using <code>escapeshellarg()</code> and <code>escapeshellcmd()</code> in PHP</li>
+            <li><strong>Least privilege</strong> — Run the application with minimal privileges (never as root)</li>
+            <li><strong>Logging and monitoring</strong> — Monitor for unusual shell command execution</li>
+            <li><strong>Web Application Firewall (WAF)</strong> — Deploy WAF rules to detect and block command injection attempts</li>
+          </ul>
+        </div>
+
+        <div class="info-box">
+          <strong>Disclaimer:</strong> <br>All activities in this writeup were conducted within a fully authorized, isolated laboratory environment. <br>These techniques are presented solely for educational and defensive security purposes.
+        </div>
+      </div>
+      <footer class="writeup-footer">
+        <a href="../../../#writeups" class="back-link">
+          <i class="fas fa-arrow-left"></i> Back to Writeups
+        </a>
+        <div class="share-links">
+          <a href="#" aria-label="Share on LinkedIn" title="Share on LinkedIn">
+            <i class="fab fa-linkedin-in"></i>
+          </a>
+          <a href="https://github.com/anxs3c" target="_blank" aria-label="View on GitHub" title="View on GitHub">
+            <i class="fab fa-github"></i>
+          </a>
+        </div>
+      </footer>
+    </div>
+  </main>
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a href="../../../" class="footer-logo">ANXS<span>3C</span></a>
+          <p>Red Team Operator · Offensive Security</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 ANXS3C · All rights reserved</span>
+      </div>
+    </div>
+  </footer>
+  <button class="back-to-top" id="backToTop">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+  <script src="../../../js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const progressBar = document.getElementById('writeupProgress');
+      window.addEventListener('scroll', function() {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = (scrollTop / docHeight) * 100;
+        progressBar.style.width = progress + '%';
+      });
+    });
+  </script>
+</body>
+</html>
