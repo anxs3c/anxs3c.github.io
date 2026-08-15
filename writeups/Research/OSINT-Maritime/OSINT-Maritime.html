@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Maritime Open Source Intelligence - Advanced OSINT techniques for vessel tracking, AIS analysis, crew profiling, infrastructure reconnaissance, and detecting illicit maritime activity" />
+  <meta name="keywords" content="Maritime OSINT, AIS, MarineTraffic, VesselFinder, Shodan, IMO, MMSI, Crew Intelligence, Maritime Security, OSINT" />
+  <meta name="author" content="ANXS3C" />
+  <title>Maritime OSINT - Technical Deep Dive - ANXS3C</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="../../../css/style.css" />
+  <link rel="stylesheet" href="../../../css/writeup.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg><text y='.9em' font-size='90'>🚢</text></svg>">
+</head>
+<body class="writeup-page">
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+  <div class="writeup-progress">
+    <div class="progress-bar" id="writeupProgress"></div>
+  </div>
+  <nav class="navbar" id="navbar">
+    <div class="container">
+      <a href="../../../" class="logo"><span>🛡️ </span>ANXS<span>3C</span></a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="https://anxs3c.github.io/#writeups">Writeups</a></li>
+      </ul>
+      <div class="nav-controls">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <i class="fas fa-moon"></i>
+        </button>
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+  <div class="cyber-lines">
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line-vertical"></div>
+    <div class="line-vertical"></div>
+    <div class="line-vertical"></div>
+  </div>
+  <main id="main">
+    <div class="writeup-container">
+      <header class="writeup-header">
+        <div class="badge">OSINT Research</div>
+        <h1>Maritime <span class="highlight">Open Source Intelligence</span></h1>
+        <p class="subtitle">
+          Advanced technical methodology for vessel tracking, AIS data analysis, crew profiling, 
+          infrastructure reconnaissance, and detecting illicit maritime operations using open source intelligence
+        </p>
+        <div class="writeup-meta">
+          <span class="meta-tag"><i class="fas fa-tag"></i> OSINT</span>
+          <span class="meta-tag"><i class="fas fa-signal"></i> Advanced</span>
+          <span class="meta-tag"><i class="fas fa-calendar"></i> August 2026</span>
+          <span class="meta-tag"><i class="fas fa-ship"></i> Maritime</span>
+          <span class="meta-tag"><i class="fas fa-search"></i> Intelligence</span>
+          <span class="meta-tag"><i class="fab fa-github"></i> <a href="https://github.com/anxs3c" target="_blank">GitHub</a></span>
+        </div>
+      </header>
+      <nav class="toc" aria-label="Table of Contents">
+        <div class="toc-header">
+          <i class="fas fa-list"></i>
+          <h3>Contents</h3>
+        </div>
+        <ul class="toc-grid">
+          <li><a href="#introduction">Introduction</a></li>
+          <li><a href="#ais-architecture">AIS Architecture</a></li>
+          <li><a href="#vessel-tracking">Vessel Tracking</a></li>
+          <li><a href="#crew-profiling">Crew Profiling</a></li>
+          <li><a href="#infrastructure">Infrastructure Recon</a></li>
+          <li><a href="#vessel-identifiers">Vessel Identifiers</a></li>
+          <li><a href="#port-analysis">Port Analysis</a></li>
+          <li><a href="#communications">Comms Monitoring</a></li>
+          <li><a href="#investigation-framework">Investigation Framework</a></li>
+          <li><a href="#case-study">Case Study</a></li>
+        </ul>
+      </nav>
+      <div class="writeup-body">
+        <h2 id="introduction">Introduction</h2>
+
+        <div class="info-box">
+          <strong>Maritime OSINT</strong> is the systematic collection and analysis of publicly available 
+          information related to vessels, ports, maritime infrastructure, and crew members. Modern ships 
+          continuously transmit operational and positional data through systems including:
+          <ul style="margin: 8px 0 0 20px;">
+            <li><strong>AIS</strong> — Automatic Identification System</li>
+            <li><strong>Satellite Communications</strong> — Inmarsat, Iridium, VSAT</li>
+            <li><strong>Maritime Radio Networks</strong> — VHF, MF/HF, NAVTEX</li>
+          </ul>
+        </div>
+
+        <p>
+          These data sources enable analysts to identify vessel movements, ownership structures, crew 
+          members, cargo patterns, and potential security vulnerabilities across the global maritime ecosystem.
+        </p>
+
+        <div class="attack-phase">
+          <h3>Maritime OSINT Data Sources</h3>
+          <ol>
+            <li><strong>AIS Data</strong> — Position, heading, speed, voyage information</li>
+            <li><strong>Vessel Registries</strong> — IMO number, flag state, ownership</li>
+            <li><strong>Satellite Imagery</strong> — Port infrastructure, vessel positions</li>
+            <li><strong>Social Media</strong> — Crew profiles, company presence</li>
+            <li><strong>Shodan</strong> — Exposed maritime infrastructure</li>
+            <li><strong>Maritime Databases</strong> — Vessel specifications, history, incidents</li>
+          </ol>
+        </div>
+
+        <h2 id="ais-architecture">AIS Architecture</h2>
+
+        <p>
+          The Automatic Identification System (AIS) is a maritime tracking system that uses transponders 
+          on vessels to broadcast position, speed, and navigational status. AIS operates on two dedicated 
+          VHF frequencies:
+        </p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Channel</th>
+                <th>Frequency</th>
+                <th>Use</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>AIS 1</td><td>161.975 MHz (CH 87B)</td><td>Primary transmission channel</td></tr>
+              <tr><td>AIS 2</td><td>162.025 MHz (CH 88B)</td><td>Secondary transmission channel</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4>AIS Message Types</h4>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Message</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>1, 2, 3</td><td>Position Report</td><td>Dynamic vessel position, speed, heading</td></tr>
+              <tr><td>5</td><td>Static Voyage Data</td><td>IMO, MMSI, vessel name, draft, destination</td></tr>
+              <tr><td>6, 12</td><td>Addressed Binary Message</td><td>Direct communication between vessels</td></tr>
+              <tr><td>9</td><td>SAR Aircraft Position</td><td>Search and rescue aircraft position</td></tr>
+              <tr><td>18</td><td>Class B Position Report</td><td>Smaller vessel position (reduced power)</td></tr>
+              <tr><td>24</td><td>Class B Static Data</td><td>Static information for Class B vessels</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>
+          Understanding these message types is critical for interpreting AIS data and identifying 
+          anomalies that may indicate intentional tampering or illicit activity.
+        </p>
+
+        <h2 id="vessel-tracking">Vessel Tracking Platforms</h2>
+
+        <h3>MarineTraffic — Technical Analysis</h3>
+
+        <p>
+          <strong>MarineTraffic</strong> aggregates AIS data from over 5,000 terrestrial receivers and 
+          satellite constellations to provide global vessel tracking coverage.
+        </p>
+
+        <h4>Data Collection Methodology</h4>
+
+        <p>
+          MarineTraffic collects and processes AIS data through:
+        </p>
+        <ul>
+          <li><strong>Terrestrial AIS Receivers</strong> — Coastal stations (range up to 50 NM)</li>
+          <li><strong>Satellite AIS</strong> — Global coverage (range unlimited)</li>
+          <li><strong>Data Fusion</strong> — Integration of multiple data sources</li>
+        </ul>
+
+        <h4>Technical Features</h4>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Feature</th>
+                <th>Description</th>
+                <th>Technical Implementation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Real-time Tracking</strong></td>
+                <td>Live vessel positions</td>
+                <td>WebSocket updates, 2-60 second intervals</td>
+              </tr>
+              <tr>
+                <td><strong>Historical Voyage Data</strong></td>
+                <td>Route reconstruction</td>
+                <td>PostgreSQL database with spatial indexing</td>
+              </tr>
+              <tr>
+                <td><strong>Port Analysis</strong></td>
+                <td>Arrival/departure patterns</td>
+                <td>Time-series aggregation and event correlation</td>
+              </tr>
+              <tr>
+                <td><strong>Vessel Database</strong></td>
+                <td>Ship specifications</td>
+                <td>Equasis, IMO, and regional registry integration</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4>VesselFinder — Verification Framework</h4>
+
+        <p>
+          <strong>VesselFinder</strong> provides a secondary verification layer for AIS intelligence. 
+          Using multiple platforms enables:
+        </p>
+        <ul>
+          <li><strong>Data Validation</strong> — Cross-referencing position reports</li>
+          <li><strong>Anomaly Detection</strong> — Identifying AIS data discrepancies</li>
+          <li><strong>Coverage Analysis</strong> — Identifying gaps in tracking coverage</li>
+        </ul>
+
+        <h2 id="crew-profiling">Crew and Personnel Intelligence</h2>
+
+        <h3>Maritime Connector</h3>
+
+        <p>
+          <strong>Maritime Connector</strong> is a maritime employment and networking platform that 
+          enables intelligence gathering on crew members and vessel personnel.
+        </p>
+
+        <h4>Available Intelligence</h4>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Data Category</th>
+                <th>Examples</th>
+                <th>Intelligence Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Professional Roles</strong></td>
+                <td>Chief Officer, Captain, Engineer</td>
+                <td>High — Organizational mapping</td>
+              </tr>
+              <tr>
+                <td><strong>Employment History</strong></td>
+                <td>Vessel assignments, durations</td>
+                <td>High — Association mapping</td>
+              </tr>
+              <tr>
+                <td><strong>Certifications</strong></td>
+                <td>STCW, maritime licenses</td>
+                <td>Medium — Qualification verification</td>
+              </tr>
+              <tr>
+                <td><strong>Nationality</strong></td>
+                <td>Country of origin</td>
+                <td>Medium — Geopolitical assessment</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4>Intelligence Correlation</h4>
+
+        <p>
+          Crew intelligence can be correlated with professional networks such as <strong>LinkedIn</strong> 
+          to identify personnel connected to specific ships or shipping companies. This correlation enables:
+        </p>
+        <ul>
+          <li><strong>Social Network Analysis</strong> — Mapping professional relationships</li>
+          <li><strong>Vessel Association</strong> — Connecting personnel to specific vessels</li>
+          <li><strong>Insider Threat Assessment</strong> — Evaluating personnel risk factors</li>
+        </ul>
+
+        <h2 id="infrastructure">Maritime Infrastructure Reconnaissance</h2>
+
+        <h3>Shodan — Technical Approach</h3>
+
+        <p>
+          <strong>Shodan</strong> enables investigators to discover internet-exposed maritime infrastructure 
+          through targeted queries:
+        </p>
+
+        <pre data-language="bash"><code><span class="comment"># Shodan search queries for maritime infrastructure</span>
+
+<span class="comment"># Exposed SATCOM terminals</span>
+<span class="variable">http.title:"Inmarsat"</span>
+
+<span class="comment"># Vessel management systems</span>
+<span class="variable">http.title:"Vessel Management" OR "Fleet Management"</span>
+
+<span class="comment"># Exposed RDP services</span>
+<span class="variable">port:3389 AND "ship" OR "maritime" OR "vessel"</span>
+
+<span class="comment"># Satellite terminal management</span>
+<span class="variable">http.title:"VSAT" OR "Satellite Terminal"</span>
+
+<span class="comment"># Navigation systems</span>
+<span class="variable">port:8080 AND "ECDIS" OR "navigation"</span></code></pre>
+
+        <h4>Security Exposures</h4>
+
+        <div class="warning-box">
+          <strong>Common Vulnerabilities Identified:</strong>
+          <ul style="margin: 8px 0 0 20px;">
+            <li><strong>RDP Exposures</strong> — Port 3389 accessible without authentication</li>
+            <li><strong>Weak SSL/TLS</strong> — Outdated encryption protocols</li>
+            <li><strong>Open Telnet/SSH</strong> — Unsecured remote access</li>
+            <li><strong>Satellite Terminal Interfaces</strong> — Public management consoles</li>
+            <li><strong>Legacy Software</strong> — Outdated maritime software versions</li>
+          </ul>
+        </div>
+
+        <h2 id="vessel-identifiers">Vessel Identification Systems</h2>
+
+        <p>
+          Unique Identification Codes for Vessels (UICVs) allow analysts to reliably track ships across 
+          multiple maritime databases throughout their operational lifetime.
+        </p>
+
+        <h4>Identifier Hierarchy</h4>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Identifier</th>
+                <th>Format</th>
+                <th>Persistence</th>
+                <th>Use Case</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>IMO Number</strong></td>
+                <td><code>7-digit (IMO 1234567)</code></td>
+                <td>Lifetime</td>
+                <td>Universal vessel identification</td>
+              </tr>
+              <tr>
+                <td><strong>MMSI</strong></td>
+                <td><code>9-digit (MIDXXXXXX)</code></td>
+                <td>Long-term</td>
+                <td>AIS and digital maritime transmissions</td>
+              </tr>
+              <tr>
+                <td><strong>IRCS</strong></td>
+                <td><code>4-5 alphanumeric</code></td>
+                <td>Long-term</td>
+                <td>Radio communication at sea</td>
+              </tr>
+              <tr>
+                <td><strong>National Registration</strong></td>
+                <td><code>Variable</code></td>
+                <td>Varies</td>
+                <td>Flag state registry</td>
+              </tr>
+              <tr>
+                <td><strong>RFMO ID</strong></td>
+                <td><code>Variable</code></td>
+                <td>Varies</td>
+                <td>Fisheries management monitoring</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>
+          These identifiers allow investigators to track vessels even when ship names, ownership, 
+          or flag registrations change, making them essential for maritime OSINT investigations.
+        </p>
+
+        <h2 id="port-analysis">Port Intelligence and Analysis</h2>
+
+        <p>
+          Ports represent critical nodes within global supply chains and are often exploited for 
+          smuggling and illicit logistics operations.
+        </p>
+
+        <h4>Analytical Framework</h4>
+
+        <div class="attack-phase">
+          <h3>Port Intelligence Methodology</h3>
+          <ol>
+            <li><strong>Vessel Traffic Pattern Analysis</strong> — Identifying congestion patterns and anomalies</li>
+            <li><strong>Port Infrastructure Assessment</strong> — Capabilities, capacity, security posture</li>
+            <li><strong>Cargo Logistics Analysis</strong> — Identifying unusual cargo patterns</li>
+            <li><strong>Historical Satellite Imagery</strong> — Time-series port activity analysis</li>
+            <li><strong>Personnel Profiling</strong> — Port officials, contractors, security personnel</li>
+          </ol>
+        </div>
+
+        <h4>Satellite Imagery Analysis</h4>
+
+        <p>
+          Satellite platforms such as <strong>Google Earth</strong> enable analysts to observe:
+        </p>
+        <ul>
+          <li><strong>Port Expansion</strong> — Infrastructure development</li>
+          <li><strong>Vessel Positioning</strong> — Berthing patterns</li>
+          <li><strong>Cargo Storage</strong> — Warehousing and inventory</li>
+          <li><strong>Infrastructure Changes</strong> — Construction and modifications</li>
+        </ul>
+
+        <h2 id="communications">Maritime Communication Monitoring</h2>
+
+        <p>
+          Several maritime communication systems transmit operational and safety-related signals that 
+          provide valuable intelligence:
+        </p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>System</th>
+                <th>Frequency</th>
+                <th>Data Type</th>
+                <th>Intelligence Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>VHF Marine Radio</strong></td>
+                <td>156-174 MHz</td>
+                <td>Voice</td>
+                <td>Ship-to-ship/port coordination</td>
+              </tr>
+              <tr>
+                <td><strong>NAVTEX</strong></td>
+                <td>518 kHz, 490 kHz</td>
+                <td>Text</td>
+                <td>Navigational warnings, weather</td>
+              </tr>
+              <tr>
+                <td><strong>Inmarsat EGC</strong></td>
+                <td>L-band</td>
+                <td>Text</td>
+                <td>Global maritime safety messages</td>
+              </tr>
+              <tr>
+                <td><strong>LRIT</strong></td>
+                <td>Varies</td>
+                <td>Position</td>
+                <td>Long-range vessel tracking</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="investigation-framework">Investigation Framework</h2>
+
+        <div class="info-box">
+          <strong>Maritime OSINT Investigation Framework</strong><br><br>
+          This structured methodology ensures comprehensive intelligence gathering and analysis.
+        </div>
+
+        <h4>Phase 1: Target Identification</h4>
+        <ul>
+          <li>Identify vessel name, IMO number, or MMSI</li>
+          <li>Gather basic vessel specifications</li>
+          <li>Determine flag state and ownership</li>
+        </ul>
+
+        <h4>Phase 2: Historical Analysis</h4>
+        <ul>
+          <li>Reconstruct voyage timeline</li>
+          <li>Identify previous ports of call</li>
+          <li>Detect route anomalies or AIS gaps</li>
+          <li>Analyze pattern of port visits</li>
+        </ul>
+
+        <h4>Phase 3: Association Mapping</h4>
+        <ul>
+          <li>Crew profiling and personnel identification</li>
+          <li>Corporate structure analysis</li>
+          <li>Vessel ownership and operator mapping</li>
+          <li>Network analysis of related entities</li>
+        </ul>
+
+        <h4>Phase 4: Infrastructure Analysis</h4>
+        <ul>
+          <li>Port visit patterns and durations</li>
+          <li>Satellite imagery analysis</li>
+          <li>Shodan reconnaissance</li>
+          <li>Security vulnerability assessment</li>
+        </ul>
+
+        <h4>Phase 5: Reporting</h4>
+        <ul>
+          <li>Structured intelligence report</li>
+          <li>Key findings and indicators</li>
+          <li>Security recommendations</li>
+        </ul>
+
+        <h2 id="case-study">Technical Case Study</h2>
+
+        <p>
+          <strong>Scenario:</strong> Investigating a suspicious cargo vessel operating in the South China Sea.
+        </p>
+
+        <div class="attack-phase">
+          <h3>Investigation Workflow</h3>
+          <ol>
+            <li>
+              <strong>Step 1 — Initial Identification</strong>
+              <ul>
+                <li>Vessel detected on MarineTraffic with irregular AIS pattern</li>
+                <li>IMO number identified: <code>IMO 9123456</code></li>
+                <li>Flag state: Panama (Panama Canal Authority registration)</li>
+              </ul>
+            </li>
+            <li>
+              <strong>Step 2 — Historical Analysis</strong>
+              <ul>
+                <li>Voyage timeline reconstructed using VesselFinder</li>
+                <li>Identified AIS gap of 72 hours (potential transponder disabling)</li>
+                <li>Port call anomalies identified</li>
+              </ul>
+            </li>
+            <li>
+              <strong>Step 3 — Association Mapping</strong>
+              <ul>
+                <li>Crew identified via Maritime Connector</li>
+                <li>Corporate structure revealed through Equasis</li>
+                <li>Linked entities in 3 jurisdictions</li>
+              </ul>
+            </li>
+            <li>
+              <strong>Step 4 — Infrastructure Analysis</strong>
+              <ul>
+                <li>Port visit patterns analyzed</li>
+                <li>Satellite imagery confirmed vessel position</li>
+                <li>Shodan identified exposed maritime systems</li>
+              </ul>
+            </li>
+            <li>
+              <strong>Step 5 — Reporting</strong>
+              <ul>
+                <li>Comprehensive intelligence report produced</li>
+                <li>Indicators of potential illicit activity identified</li>
+                <li>Security recommendations provided</li>
+              </ul>
+            </li>
+          </ol>
+        </div>
+
+        <h3>Tools and Technical Resources</h3>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Tool/Platform</th>
+                <th>Purpose</th>
+                <th>Technical Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>MarineTraffic</strong></td>
+                <td>AIS data collection</td>
+                <td>API available for automated queries</td>
+              </tr>
+              <tr>
+                <td><strong>VesselFinder</strong></td>
+                <td>Secondary verification</td>
+                <td>Cross-reference data validation</td>
+              </tr>
+              <tr>
+                <td><strong>Shodan</strong></td>
+                <td>Infrastructure recon</td>
+                <td>Banner grabbing, port scanning</td>
+              </tr>
+              <tr>
+                <td><strong>Maritime Connector</strong></td>
+                <td>Crew intelligence</td>
+                <td>Personnel and employment data</td>
+              </tr>
+              <tr>
+                <td><strong>Google Earth</strong></td>
+                <td>Satellite imagery</td>
+                <td>Historical imagery analysis</td>
+              </tr>
+              <tr>
+                <td><strong>Equasis</strong></td>
+                <td>Vessel registration</td>
+                <td>IMO, ownership, flag state</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="info-box">
+          <strong>Disclaimer:</strong> <br>All activities in this writeup were conducted within a fully authorized, isolated laboratory environment. <br>These techniques are presented solely for educational and defensive security purposes.
+        </div>
+      </div>
+      <footer class="writeup-footer">
+        <a href="../../../#writeups" class="back-link">
+          <i class="fas fa-arrow-left"></i> Back to Writeups
+        </a>
+        <div class="share-links">
+          <a href="#" aria-label="Share on LinkedIn" title="Share on LinkedIn">
+            <i class="fab fa-linkedin-in"></i>
+          </a>
+          <a href="https://github.com/anxs3c" target="_blank" aria-label="View on GitHub" title="View on GitHub">
+            <i class="fab fa-github"></i>
+          </a>
+        </div>
+      </footer>
+    </div>
+  </main>
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a href="../../../" class="footer-logo">ANXS<span>3C</span></a>
+          <p>Red Team Operator · Offensive Security</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 ANXS3C · All rights reserved</span>
+      </div>
+    </div>
+  </footer>
+  <button class="back-to-top" id="backToTop">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+  <script src="../../../js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const progressBar = document.getElementById('writeupProgress');
+      window.addEventListener('scroll', function() {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = (scrollTop / docHeight) * 100;
+        progressBar.style.width = progress + '%';
+      });
+    });
+  </script>
+</body>
+</html>
