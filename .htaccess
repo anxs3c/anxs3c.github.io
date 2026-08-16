@@ -1,0 +1,183 @@
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-XSS-Protection "1; mode=block"
+    Header always append X-Frame-Options "SAMEORIGIN"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self';"
+    Header unset Server
+    Header unset X-Powered-By
+</IfModule>
+
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+<FilesMatch "^(composer\.json|composer\.lock|package\.json|package-lock\.json|\.env|\.gitignore|README\.md|CHANGELOG\.md|LICENSE|config\.yml|config\.yaml)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+<IfModule mod_autoindex.c>
+    Options -Indexes
+</IfModule>
+
+RedirectMatch 403 ^/(assets/(css|js)/.*\.(bak|old|tmp|swp|log|sql|php|ini|conf|config|xml|json|yaml|yml))$
+RedirectMatch 403 ^/(backup|tmp|cache|logs|config|includes|vendor|node_modules|storage|bootstrap|database|tests)/(.*)$
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresDefault "access plus 1 week"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType application/x-javascript "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/x-icon "access plus 1 year"
+    ExpiresByType font/ttf "access plus 1 year"
+    ExpiresByType font/otf "access plus 1 year"
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType application/font-woff "access plus 1 year"
+    ExpiresByType application/font-woff2 "access plus 1 year"
+    ExpiresByType application/pdf "access plus 1 month"
+</IfModule>
+
+<IfModule mod_headers.c>
+    <FilesMatch "\.(css|js|jpg|jpeg|png|gif|svg|webp|ico|woff|woff2|ttf|otf|eot|pdf)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+    <FilesMatch "\.(html|htm)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+</IfModule>
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript
+    AddOutputFilterByType DEFLATE application/xml application/xhtml+xml application/rss+xml
+    AddOutputFilterByType DEFLATE application/javascript application/x-javascript
+    AddOutputFilterByType DEFLATE application/json application/ld+json
+    AddOutputFilterByType DEFLATE image/svg+xml
+    BrowserMatch ^Mozilla/4 gzip-only-text/html
+    BrowserMatch ^Mozilla/4\.0[678] no-gzip
+    BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
+    Header append Vary User-Agent
+</IfModule>
+
+ErrorDocument 400 /assets/err/400.html
+ErrorDocument 401 /assets/err/401.html
+ErrorDocument 403 /assets/err/403.html
+ErrorDocument 404 /assets/err/404.html
+ErrorDocument 500 /assets/err/500.html
+ErrorDocument 502 /assets/err/502.html
+ErrorDocument 503 /assets/err/503.html
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    RewriteCond %{THE_REQUEST} \s/([^.]+)\.html [NC]
+    RewriteRule ^ /%1 [R=301,L]
+
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME}.html -f
+    RewriteRule ^([^/]+)/?$ $1.html [L]
+
+    RewriteCond %{SCRIPT_FILENAME} -d [OR]
+    RewriteCond %{SCRIPT_FILENAME} -f
+    RewriteRule "(^|/)\." - [F]
+
+    RewriteCond %{QUERY_STRING} (base64_encode|eval\(|system\(|passthru\(|exec\(|shell_exec\(|phpinfo\(|popen\(|proc_open\(|curl_exec\(|file_get_contents\(|include\(|require\(|assert\(|die\(|exit\() [NC,OR]
+    RewriteCond %{QUERY_STRING} (\.\.\/|\.\.%2f|\.\.%5c|\.\.%252f|\.\.%255c|\.\.\\|\.\.\.\/) [NC,OR]
+    RewriteCond %{QUERY_STRING} (union.*select|select.*from|information_schema|table_name|column_name) [NC,OR]
+    RewriteCond %{QUERY_STRING} (cmd=|wget|curl|nc|nmap|perl|python|ruby|bash|sh) [NC,OR]
+    RewriteCond %{QUERY_STRING} (<|%3C).*script.*(>|%3E) [NC,OR]
+    RewriteCond %{QUERY_STRING} (GLOBALS|_REQUEST|_GET|_POST|_FILES|_COOKIE|_SERVER|_ENV) [NC]
+    RewriteRule .* - [F,L]
+
+    RewriteCond %{HTTP_USER_AGENT} (libwww|wget|curl|perl|python|ruby|java|nmap|nikto|sqlmap|burpsuite|acunetix|netsparker|scan|spider|crawler) [NC]
+    RewriteRule .* - [F,L]
+
+    RewriteRule ^writeups/(.*)\.(php|sh|pl|py|cgi|exe|cmd|bat|com|jsp)$ - [F,L]
+
+    RewriteCond %{HTTP_REFERER} !^https?://(www\.)?anxs3c\.github\.io [NC]
+    RewriteRule \.(jpg|jpeg|png|gif|svg|webp|ico|css|js|woff|woff2|ttf)$ - [F,L]
+</IfModule>
+
+<IfModule mod_php7.c>
+    php_flag display_errors Off
+    php_flag display_startup_errors Off
+    php_flag log_errors On
+    php_flag ignore_repeated_errors Off
+    php_flag ignore_repeated_source Off
+    php_flag report_memleaks On
+    php_flag track_errors Off
+    php_value error_log logs/php_error.log
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
+    php_flag allow_url_fopen Off
+    php_flag allow_url_include Off
+    php_flag expose_php Off
+    php_flag register_globals Off
+    php_flag magic_quotes_gpc Off
+    php_flag file_uploads On
+    php_value session.cookie_httponly 1
+    php_value session.cookie_secure 1
+    php_value session.use_only_cookies 1
+    php_value session.use_strict_mode 1
+</IfModule>
+
+<IfModule mod_php8.c>
+    php_flag display_errors Off
+    php_flag display_startup_errors Off
+    php_flag log_errors On
+    php_flag ignore_repeated_errors Off
+    php_flag ignore_repeated_source Off
+    php_flag report_memleaks On
+    php_flag track_errors Off
+    php_value error_log logs/php_error.log
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
+    php_flag allow_url_fopen Off
+    php_flag allow_url_include Off
+    php_flag expose_php Off
+    php_flag register_globals Off
+    php_flag file_uploads On
+    php_value session.cookie_httponly 1
+    php_value session.cookie_secure 1
+    php_value session.use_only_cookies 1
+    php_value session.use_strict_mode 1
+</IfModule>
+
+<IfModule mod_mime.c>
+    AddType application/javascript .js .mjs
+    AddType text/css .css
+    AddType text/html .html .htm
+    AddType image/svg+xml .svg
+    AddType application/json .json
+    AddType application/ld+json .jsonld
+    AddType font/woff .woff
+    AddType font/woff2 .woff2
+    AddType font/ttf .ttf
+    AddType font/otf .otf
+</IfModule>
+
+AddDefaultCharset UTF-8
+
+<IfModule mod_headers.c>
+    <FilesMatch "\.(css|js|jpg|jpeg|png|gif|svg|webp|woff|woff2|ttf|otf|eot)$">
+        Header set Access-Control-Allow-Origin "*"
+    </FilesMatch>
+</IfModule>
+
+DirectoryIndex index.html index.htm
+
+<IfModule mod_rewrite.c>
+    RewriteCond %{HTTP_USER_AGENT} ^$ [OR]
+    RewriteCond %{HTTP_USER_AGENT} (AhrefsBot|MJ12bot|SemrushBot|DotBot|BLEXBot|UptimeRobot|YandexBot|Baiduspider|Sogou|Exabot|Ezooms|MegaIndex) [NC]
+    RewriteRule .* - [F,L]
+</IfModule>
