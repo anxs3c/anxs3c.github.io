@@ -368,33 +368,39 @@ document.addEventListener('DOMContentLoaded', function() {
     updateDisplay();
 });
 
-const writeupFilters = document.querySelectorAll('.writeup-filter');
-const writeupCards = document.querySelectorAll('.writeup-card');
+document.addEventListener('DOMContentLoaded', function() {
+    const writeupFilters = document.querySelectorAll('.writeup-filter');
+    const writeupCards = document.querySelectorAll('.writeup-card');
 
-if (writeupFilters.length) {
-    writeupFilters.forEach(filter => {
+    function filterWriteups(filterValue) {
+        writeupCards.forEach(function(card) {
+            // Split data-category by space to support multiple categories
+            const categories = card.getAttribute('data-category').split(' ');
+            if (filterValue === 'all' || categories.includes(filterValue)) {
+                card.style.display = 'block';
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.4s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 100);
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    writeupFilters.forEach(function(filter) {
         filter.addEventListener('click', function() {
-            writeupFilters.forEach(f => f.classList.remove('active'));
+            writeupFilters.forEach(function(f) { f.classList.remove('active'); });
             this.classList.add('active');
-            const category = this.dataset.filter;
-            
-            writeupCards.forEach((card, index) => {
-                if (category === 'all' || card.dataset.category === category) {
-                    card.style.display = 'block';
-                    card.style.opacity = '0';
-                    card.style.transform = 'translateY(20px)';
-                    setTimeout(() => {
-                        card.style.transition = 'all 0.4s ease';
-                        card.style.opacity = '1';
-                        card.style.transform = 'translateY(0)';
-                    }, 100 + (index * 80));
-                } else {
-                    card.style.display = 'none';
-                }
-            });
+
+            const filterValue = this.getAttribute('data-filter');
+            filterWriteups(filterValue);
         });
     });
-}
+});
 
 const archiveFilters = document.querySelectorAll('.archive-filter');
 const archiveItems = document.querySelectorAll('.archive-item');
