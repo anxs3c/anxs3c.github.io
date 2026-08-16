@@ -780,7 +780,7 @@
       </div>
     </section>
 
-    <section class="writeups" id="writeups">
+   <section class="writeups" id="writeups">
       <div class="container">
         <span class="section-tag">Research</span>
         <h2 class="section-title">Technical Writeups</h2>
@@ -793,6 +793,7 @@
           <button class="writeup-filter" data-filter="ics">ICS/Hardware</button>
           <button class="writeup-filter" data-filter="osint">OSINT</button>
           <button class="writeup-filter" data-filter="forensics">Forensics</button>
+          <button class="writeup-filter" data-filter="research">Research</button>
         </div>
         <div class="writeup-grid">
 
@@ -812,53 +813,20 @@
             <a href="./writeups/machines/twomillion/twomillion.html" class="writeup-link">Read →</a>
           </div>
 
-         <div class="writeup-card" data-category="osint research">
-            <div class="writeup-meta"><span class="writeup-date">August 2026</span><span class="writeup-category osint">OSINT</span><span class="writeup-category research">Research</span><span class="writeup-difficulty advanced">Advanced</span></div>
-            <h3>Maritime OSINT — Vessel Tracking &amp; Intelligence</h3>
-            <p>Advanced maritime OSINT investigation covering AIS analysis, crew profiling, infrastructure reconnaissance, vessel identification systems, and detecting illegal maritime activity.</p>
-            <div class="writeup-tags"><span>MarineTraffic</span><span>AIS</span><span>IMO</span><span>Shodan</span></div>
-            <a href="./writeups/Research/OSINT-Maritime/OSINT-Maritime.html" class="writeup-link">Read →</a>
-          </div>" class="writeup-link">Read →</a>
+          <div class="writeup-card" data-category="linux">
+            <div class="writeup-meta"><span class="writeup-date">February 2026</span><span class="writeup-category linux">Linux</span><span class="writeup-difficulty easy">Easy</span></div>
+            <h3>Cap — IDOR to Linux Capabilities</h3>
+            <p>From IDOR vulnerability and PCAP analysis to credential reuse and cap_setuid privilege escalation.</p>
+            <div class="writeup-tags"><span>IDOR</span><span>PCAP</span><span>cap_setuid</span></div>
+            <a href="./writeups/machines/cap/cap.html" class="writeup-link">Read →</a>
           </div>
-          
+
           <div class="writeup-card" data-category="web">
             <div class="writeup-meta"><span class="writeup-date">August 2026</span><span class="writeup-category web">Web</span><span class="writeup-difficulty medium">Medium</span></div>
             <h3>File Upload — 6 Advanced Bypass Techniques</h3>
             <p>Complete walkthrough of Content-Type, .htaccess, null byte, and polyglot attacks.</p>
             <div class="writeup-tags"><span>RCE</span><span>Web Shell</span><span>Polyglot</span></div>
             <a href="./writeups/WebSec-labs/WebSec-FileUpload/WebSec-FileUpload.html" class="writeup-link">Read →</a>
-          </div>
-
-          <div class="writeup-card" data-category="ics">
-            <div class="writeup-meta"><span class="writeup-date">April 2026</span><span class="writeup-category ics">ICS/HW</span><span class="writeup-difficulty hard">Hard</span></div>
-            <h3>SeaPanda — ICS/OT Network Compromise</h3>
-            <p>Complete reconstruction of a maritime ICS attack from USB infection to PLC manipulation.</p>
-            <div class="writeup-tags"><span>Modbus</span><span>PLC</span><span>SCADA</span></div>
-            <a href="./writeups/machines/seapanda/seapanda.html" class="writeup-link">Read →</a>
-          </div>
-
-          <div class="writeup-card" data-category="osint">
-            <div class="writeup-meta"><span class="writeup-date">August 2026</span><span class="writeup-category osint">OSINT</span><span class="writeup-difficulty medium">Medium</span></div>
-            <h3>Sakura — Complete OSINT Investigation</h3>
-            <p>Full investigation using metadata analysis, social media recon, cryptocurrency tracing, and PGP analysis.</p>
-            <div class="writeup-tags"><span>Metadata</span><span>Cryptocurrency</span><span>PGP</span></div>
-            <a href="./writeups/Chall/OSINT-Sakura/Sakura.html" class="writeup-link">Read →</a>
-          </div>
-
-          <div class="writeup-card" data-category="ics">
-            <div class="writeup-meta"><span class="writeup-date">August 2026</span><span class="writeup-category ics">ICS/HW</span><span class="writeup-difficulty medium">Medium</span></div>
-            <h3>EtherTag — ICS Protocol Analysis</h3>
-            <p>EtherNet/IP controller enumeration and CIP protocol analysis for PLC flag extraction.</p>
-            <div class="writeup-tags"><span>EtherNet/IP</span><span>CIP</span><span>PLC</span></div>
-            <a href="./writeups/Chall/ICS-EtherTag/ICS-EtherTag.html" class="writeup-link">Read →</a>
-          </div>
-
-          <div class="writeup-card" data-category="forensics">
-            <div class="writeup-meta"><span class="writeup-date">August 2026</span><span class="writeup-category forensics">Forensics</span><span class="writeup-difficulty easy">Easy</span></div>
-            <h3>Hidden 7z Archive in PNG</h3>
-            <p>Steganography analysis and data carving to extract a hidden 7z archive from a PNG image.</p>
-            <div class="writeup-tags"><span>Steganography</span><span>zsteg</span><span>Data Carving</span></div>
-            <a href="./writeups/Chall/Forensics-FileTampering-Appended7z/Forensics-FileTampering-Appended7z.html" class="writeup-link">Read →</a>
           </div>
 
           <div class="writeup-card" data-category="web">
@@ -869,6 +837,69 @@
             <a href="./writeups/WebSec-labs/WebSec-AccessControl/WebSec-AccessControl.html" class="writeup-link">Read →</a>
           </div>
 
+          <div class="writeup-card" data-category="web">
+            <div class="writeup-meta"><span class="writeup-date">August 2026</span><span class="writeup-category web">Web</span><span class="writeup-difficulty medium">Medium</span></div>
+            <h3>OS Command Injection — 3 Labs</h3>
+            <p>Complete walkthrough of direct and blind OS command injection techniques with time delays and output redirection.</p>
+            <div class="writeup-tags"><span>RCE</span><span>Command Injection</span><span>Blind</span></div>
+            <a href="./writeups/WebSec-labs/WebSec-OSCommand/WebSec-OSCommand.html" class="writeup-link">Read →</a>
+          </div>
+
+          <div class="writeup-card" data-category="web">
+            <div class="writeup-meta"><span class="writeup-date">August 2026</span><span class="writeup-category web">Web</span><span class="writeup-difficulty medium">Medium</span></div>
+            <h3>Path Traversal — 6 Labs</h3>
+            <p>Complete walkthrough of directory traversal attacks, absolute path bypass, null byte injection, and URL encoding techniques.</p>
+            <div class="writeup-tags"><span>LFI</span><span>Path Traversal</span><span>Null Byte</span></div>
+            <a href="./writeups/WebSec-labs/WebSec-PathTraversal/WebSec-PathTraversal.html" class="writeup-link">Read →</a>
+          </div>
+
+          <div class="writeup-card" data-category="ics">
+            <div class="writeup-meta"><span class="writeup-date">April 2026</span><span class="writeup-category ics">ICS/HW</span><span class="writeup-difficulty hard">Hard</span></div>
+            <h3>SeaPanda — ICS/OT Network Compromise</h3>
+            <p>Complete reconstruction of a maritime ICS attack from USB infection to PLC manipulation.</p>
+            <div class="writeup-tags"><span>Modbus</span><span>PLC</span><span>SCADA</span></div>
+            <a href="./writeups/machines/seapanda/seapanda.html" class="writeup-link">Read →</a>
+          </div>
+
+          <div class="writeup-card" data-category="ics">
+            <div class="writeup-meta"><span class="writeup-date">August 2026</span><span class="writeup-category ics">ICS/HW</span><span class="writeup-difficulty medium">Medium</span></div>
+            <h3>EtherTag — ICS Protocol Analysis</h3>
+            <p>EtherNet/IP controller enumeration and CIP protocol analysis for PLC flag extraction.</p>
+            <div class="writeup-tags"><span>EtherNet/IP</span><span>CIP</span><span>PLC</span></div>
+            <a href="./writeups/Chall/ICS-EtherTag/ICS-EtherTag.html" class="writeup-link">Read →</a>
+          </div>
+
+          <div class="writeup-card" data-category="osint">
+            <div class="writeup-meta"><span class="writeup-date">August 2026</span><span class="writeup-category osint">OSINT</span><span class="writeup-difficulty medium">Medium</span></div>
+            <h3>Sakura — Complete OSINT Investigation</h3>
+            <p>Full investigation using metadata analysis, social media recon, cryptocurrency tracing, and PGP analysis.</p>
+            <div class="writeup-tags"><span>Metadata</span><span>Cryptocurrency</span><span>PGP</span></div>
+            <a href="./writeups/Chall/OSINT-Sakura/Sakura.html" class="writeup-link">Read →</a>
+          </div>
+
+          <div class="writeup-card" data-category="osint research">
+            <div class="writeup-meta"><span class="writeup-date">August 2026</span><span class="writeup-category osint">OSINT</span><span class="writeup-category research">Research</span><span class="writeup-difficulty advanced">Advanced</span></div>
+            <h3>Maritime OSINT — Vessel Tracking &amp; Intelligence</h3>
+            <p>Advanced maritime OSINT investigation covering AIS analysis, crew profiling, infrastructure reconnaissance, vessel identification systems, and detecting illegal maritime activity.</p>
+            <div class="writeup-tags"><span>MarineTraffic</span><span>AIS</span><span>IMO</span><span>Shodan</span></div>
+            <a href="./writeups/Research/OSINT-Maritime/OSINT-Maritime.html" class="writeup-link">Read →</a>
+          </div>
+
+          <div class="writeup-card" data-category="forensics">
+            <div class="writeup-meta"><span class="writeup-date">August 2026</span><span class="writeup-category forensics">Forensics</span><span class="writeup-difficulty easy">Easy</span></div>
+            <h3>Hidden 7z Archive in PNG</h3>
+            <p>Steganography analysis and data carving to extract a hidden 7z archive from a PNG image.</p>
+            <div class="writeup-tags"><span>Steganography</span><span>zsteg</span><span>Data Carving</span></div>
+            <a href="./writeups/Chall/Forensics-FileTampering-Appended7z/Forensics-FileTampering-Appended7z.html" class="writeup-link">Read →</a>
+          </div>
+
+          <div class="writeup-card" data-category="ics research">
+            <div class="writeup-meta"><span class="writeup-date">August 2026</span><span class="writeup-category ics">ICS/HW</span><span class="writeup-category research">Research</span><span class="writeup-difficulty advanced">Advanced</span></div>
+            <h3>Dressrosa Reactor — OPC-UA Exploitation</h3>
+            <p>Advanced ICS research covering OPC-UA PLC exploitation, SCADA HMI manipulation, and nuclear reactor meltdown simulation.</p>
+            <div class="writeup-tags"><span>OPC-UA</span><span>PLC</span><span>SCADA</span></div>
+            <a href="./writeups/Chall/ICS-DressrosaReactor/ICS-DressrosaReactor.html" class="writeup-link">Read →</a>
+          </div>
 
         </div>
       </div>
