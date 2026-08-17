@@ -374,7 +374,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function filterWriteups(filterValue) {
         writeupCards.forEach(function(card) {
-            // Split data-category by space to support multiple categories
             const categories = card.getAttribute('data-category').split(' ');
             if (filterValue === 'all' || categories.includes(filterValue)) {
                 card.style.display = 'block';
@@ -748,3 +747,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+
+(function() {
+    if (window.location.pathname.endsWith('.html')) {
+        var cleanUrl = window.location.pathname.replace(/\.html$/, '');
+        var newUrl = window.location.origin + cleanUrl + window.location.search + window.location.hash;
+        window.history.replaceState({}, document.title, newUrl);
+    }
+
+    document.addEventListener('click', function(e) {
+        var link = e.target.closest('a');
+        if (!link) return;
+        
+        var href = link.getAttribute('href');
+        if (href && href.endsWith('.html') && !href.startsWith('http') && !href.startsWith('mailto')) {
+            e.preventDefault();
+            var cleanHref = href.replace(/\.html$/, '');
+            window.location.href = cleanHref;
+        }
+    });
+})();
