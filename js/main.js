@@ -767,7 +767,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 })();
-
 class ViewCounter {
   constructor() {
     this.apiBase = 'https://api.hits.sh';
@@ -778,6 +777,7 @@ class ViewCounter {
       writeups: 'anxs3c-writeups',
       today: 'anxs3c-today'
     };
+    this.apiAvailable = true;
   }
 
   getCached(slug) {
@@ -804,10 +804,40 @@ class ViewCounter {
     }
   }
 
+  getLocalFallback(slug) {
+    try {
+      const data = JSON.parse(localStorage.getItem('anxs3c-local-counts') || '{}');
+      if (!data[slug]) {
+        data[slug] = parseInt(localStorage.getItem(`${slug}-count`) || 0) + 1;
+        localStorage.setItem(`${slug}-count`, data[slug]);
+        localStorage.setItem('anxs3c-local-counts', JSON.stringify(data));
+      }
+      return data[slug] || 1;
+    } catch {
+      return 1;
+    }
+  }
+
+  incrementLocal(slug) {
+    try {
+      const data = JSON.parse(localStorage.getItem('anxs3c-local-counts') || '{}');
+      data[slug] = (data[slug] || 0) + 1;
+      localStorage.setItem('anxs3c-local-counts', JSON.stringify(data));
+      localStorage.setItem(`${slug}-count`, data[slug]);
+      return data[slug];
+    } catch {
+      return 1;
+    }
+  }
+
   async fetchViews(slug) {
     const cached = this.getCached(slug);
     if (cached !== null) {
       return cached;
+    }
+
+    if (!this.apiAvailable) {
+      return this.getLocalFallback(slug);
     }
 
     try {
@@ -818,8 +848,9 @@ class ViewCounter {
       this.setCached(slug, views);
       return views;
     } catch (error) {
-      console.error(`View counter error for ${slug}:`, error);
-      return 0;
+      console.warn(`API error for ${slug}, using local fallback`, error);
+      this.apiAvailable = false;
+      return this.getLocalFallback(slug);
     }
   }
 
@@ -834,6 +865,11 @@ class ViewCounter {
 
     const views = await this.fetchViews(slug);
     el.textContent = this.formatNumber(views);
+    
+    if (el.textContent === '—' || el.textContent === '0') {
+      const local = this.getLocalFallback(slug);
+      el.textContent = this.formatNumber(local);
+    }
   }
 
   async updateWriteupCounters() {
@@ -860,6 +896,11 @@ class ViewCounter {
 
       const views = await this.fetchViews(slug);
       counterEl.textContent = this.formatNumber(views);
+      
+      if (counterEl.textContent === '—' || counterEl.textContent === '0') {
+        const local = this.getLocalFallback(slug);
+        counterEl.textContent = this.formatNumber(local);
+      }
     });
   }
 
@@ -876,7 +917,9 @@ class ViewCounter {
         const estimatedVisitors = Math.floor(views * 0.3);
         visitorEl.textContent = this.formatNumber(estimatedVisitors);
       } catch (e) {
-        visitorEl.textContent = '—';
+        const local = this.getLocalFallback(this.slugs.total);
+        const estimatedVisitors = Math.floor(local * 0.3);
+        visitorEl.textContent = this.formatNumber(estimatedVisitors);
       }
     }
     
