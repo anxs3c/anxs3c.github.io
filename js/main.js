@@ -767,3 +767,151 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 })();
+
+class ViewCounter {
+  constructor() {
+    this.apiBase = 'https://api.hits.sh';
+    this.cacheKey = 'anxs3c-counter-data';
+    this.cacheDuration = 300000;
+    this.slugs = {
+      total: 'anxs3c-portfolio',
+      writeups: 'anxs3c-writeups',
+      support: 'anxs3c-support',
+      twomillion: 'anxs3c-twomillion',
+      cap: 'anxs3c-cap',
+      seapanda: 'anxs3c-seapanda',
+      ghostlink: 'anxs3c-ghostlink'
+    };
+  }
+
+  getCached(slug) {
+    try {
+      const data = JSON.parse(localStorage.getItem(this.cacheKey) || '{}');
+      if (data[slug] && (Date.now() - data[slug].timestamp < this.cacheDuration)) {
+        return data[slug].value;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  setCached(slug, value) {
+    try {
+      const data = JSON.parse(localStorage.getItem(this.cacheKey) || '{}');
+      data[slug] = {
+        value: value,
+        timestamp: Date.now()
+      };
+      localStorage.setItem(this.cacheKey, JSON.stringify(data));
+    } catch {
+    }
+  }
+
+  async fetchViews(slug) {
+    const cached = this.getCached(slug);
+    if (cached !== null) {
+      return cached;
+    }
+
+    try {
+      const response = await fetch(`${this.apiBase}/${slug}.json`);
+      if (!response.ok) throw new Error('API error');
+      const data = await response.json();
+      const views = data.views || 0;
+      this.setCached(slug, views);
+      return views;
+    } catch (error) {
+      console.error(`View counter error for ${slug}:`, error);
+      return '—';
+    }
+  }
+
+  formatNumber(num) {
+    if (num === '—') return num;
+    return num.toLocaleString();
+  }
+
+  async updateCounter(elementId, slug) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+
+    const views = await this.fetchViews(slug);
+    el.textContent = this.formatNumber(views);
+  }
+
+  async updateWriteupCounters() {
+    const writeupCards = document.querySelectorAll('.writeup-card');
+    
+    writeupCards.forEach(async (card) => {
+      const counterEl = card.querySelector('.writeup-view-counter .view-count');
+      if (!counterEl) return;
+
+      const link = card.querySelector('.writeup-link');
+      if (!link) return;
+
+      const href = link.getAttribute('href');
+      let slug = 'writeup';
+      if (href.includes('support')) slug = this.slugs.support;
+      else if (href.includes('twomillion')) slug = this.slugs.twomillion;
+      else if (href.includes('cap')) slug = this.slugs.cap;
+      else if (href.includes('seapanda')) slug = this.slugs.seapanda;
+      else if (href.includes('ghostlink')) slug = this.slugs.ghostlink;
+      else {
+        const filename = href.split('/').pop().replace('.html', '');
+        slug = `anxs3c-${filename}`;
+      }
+
+      const views = await this.fetchViews(slug);
+      counterEl.textContent = this.formatNumber(views);
+    });
+  }
+
+  updateVisitorCount() {
+    const visitorEl = document.getElementById('visitor-count');
+    if (!visitorEl) return;
+
+    let visitorId = localStorage.getItem('visitor-id');
+    if (!visitorId) {
+      visitorId = 'visitor-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('visitor-id', visitorId);
+    }
+    let visitors = JSON.parse(localStorage.getItem('anxs3c-visitors') || '[]');
+    if (!visitors.includes(visitorId)) {
+      visitors.push(visitorId);
+      localStorage.setItem('anxs3c-visitors', JSON.stringify(visitors));
+    }
+
+    visitorEl.textContent = visitors.length.toLocaleString();
+  }
+
+  updateTodayViews() {
+    const todayEl = document.getElementById('today-views');
+    if (!todayEl) return;
+
+    const today = new Date().toDateString();
+    let todayData = JSON.parse(localStorage.getItem('anxs3c-today') || '{}');
+
+    if (todayData.date !== today) {
+      todayData = { date: today, count: 1 };
+    } else {
+      todayData.count += 1;
+    }
+    localStorage.setItem('anxs3c-today', JSON.stringify(todayData));
+
+    todayEl.textContent = todayData.count.toLocaleString();
+  }
+
+  async init() {
+    await this.updateCounter('total-views', this.slugs.total);
+    await this.updateCounter('writeup-views', this.slugs.writeups);
+    this.updateVisitorCount();
+    this.updateTodayViews();
+    await this.updateWriteupCounters();
+  }
+}
+
+document.addEventListener('DOMContentLoaded', async function() {
+  const counter = new ViewCounter();
+  await counter.init();
+});
