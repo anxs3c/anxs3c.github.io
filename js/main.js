@@ -819,12 +819,12 @@ class ViewCounter {
       return views;
     } catch (error) {
       console.error(`View counter error for ${slug}:`, error);
-      return '—';
+      return 0;
     }
   }
 
   formatNumber(num) {
-    if (num === '—') return num;
+    if (num === null || num === undefined || isNaN(num)) return '—';
     return num.toLocaleString();
   }
 
@@ -866,15 +866,20 @@ class ViewCounter {
   async init() {
     await this.updateCounter('total-views', this.slugs.total);
     await this.updateCounter('writeup-views', this.slugs.writeups);
+    await this.updateCounter('today-views', this.slugs.today);
     
     const visitorEl = document.getElementById('visitor-count');
     if (visitorEl) {
-      const totalViews = await this.fetchViews(this.slugs.total);
-      const estimatedVisitors = Math.floor(totalViews * 0.3);
-      visitorEl.textContent = this.formatNumber(estimatedVisitors);
+      try {
+        const totalViews = await this.fetchViews(this.slugs.total);
+        const views = typeof totalViews === 'number' ? totalViews : 0;
+        const estimatedVisitors = Math.floor(views * 0.3);
+        visitorEl.textContent = this.formatNumber(estimatedVisitors);
+      } catch (e) {
+        visitorEl.textContent = '—';
+      }
     }
-
-    await this.updateCounter('today-views', this.slugs.today);
+    
     await this.updateWriteupCounters();
   }
 }
