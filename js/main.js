@@ -776,11 +776,7 @@ class ViewCounter {
     this.slugs = {
       total: 'anxs3c-portfolio',
       writeups: 'anxs3c-writeups',
-      support: 'anxs3c-support',
-      twomillion: 'anxs3c-twomillion',
-      cap: 'anxs3c-cap',
-      seapanda: 'anxs3c-seapanda',
-      ghostlink: 'anxs3c-ghostlink'
+      today: 'anxs3c-today'
     };
   }
 
@@ -852,11 +848,11 @@ class ViewCounter {
 
       const href = link.getAttribute('href');
       let slug = 'writeup';
-      if (href.includes('support')) slug = this.slugs.support;
-      else if (href.includes('twomillion')) slug = this.slugs.twomillion;
-      else if (href.includes('cap')) slug = this.slugs.cap;
-      else if (href.includes('seapanda')) slug = this.slugs.seapanda;
-      else if (href.includes('ghostlink')) slug = this.slugs.ghostlink;
+      if (href.includes('support')) slug = 'anxs3c-support';
+      else if (href.includes('twomillion')) slug = 'anxs3c-twomillion';
+      else if (href.includes('cap')) slug = 'anxs3c-cap';
+      else if (href.includes('seapanda')) slug = 'anxs3c-seapanda';
+      else if (href.includes('ghostlink')) slug = 'anxs3c-ghostlink';
       else {
         const filename = href.split('/').pop().replace('.html', '');
         slug = `anxs3c-${filename}`;
@@ -867,46 +863,18 @@ class ViewCounter {
     });
   }
 
-  updateVisitorCount() {
-    const visitorEl = document.getElementById('visitor-count');
-    if (!visitorEl) return;
-
-    let visitorId = localStorage.getItem('visitor-id');
-    if (!visitorId) {
-      visitorId = 'visitor-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-      localStorage.setItem('visitor-id', visitorId);
-    }
-    let visitors = JSON.parse(localStorage.getItem('anxs3c-visitors') || '[]');
-    if (!visitors.includes(visitorId)) {
-      visitors.push(visitorId);
-      localStorage.setItem('anxs3c-visitors', JSON.stringify(visitors));
-    }
-
-    visitorEl.textContent = visitors.length.toLocaleString();
-  }
-
-  updateTodayViews() {
-    const todayEl = document.getElementById('today-views');
-    if (!todayEl) return;
-
-    const today = new Date().toDateString();
-    let todayData = JSON.parse(localStorage.getItem('anxs3c-today') || '{}');
-
-    if (todayData.date !== today) {
-      todayData = { date: today, count: 1 };
-    } else {
-      todayData.count += 1;
-    }
-    localStorage.setItem('anxs3c-today', JSON.stringify(todayData));
-
-    todayEl.textContent = todayData.count.toLocaleString();
-  }
-
   async init() {
     await this.updateCounter('total-views', this.slugs.total);
     await this.updateCounter('writeup-views', this.slugs.writeups);
-    this.updateVisitorCount();
-    this.updateTodayViews();
+    
+    const visitorEl = document.getElementById('visitor-count');
+    if (visitorEl) {
+      const totalViews = await this.fetchViews(this.slugs.total);
+      const estimatedVisitors = Math.floor(totalViews * 0.3);
+      visitorEl.textContent = this.formatNumber(estimatedVisitors);
+    }
+
+    await this.updateCounter('today-views', this.slugs.today);
     await this.updateWriteupCounters();
   }
 }
